@@ -62,7 +62,7 @@ if __name__ =="__main__":
     tr = 0.6 
     W_init = 50
     C_L = 1.1
-    AR = 8
+    AR = 10
     highest_altitude = 33_000
     lowest_altitude = 0
     max_mach_no =0.8
@@ -73,7 +73,7 @@ if __name__ =="__main__":
     #design specific variables
     V_fus = 0.017
     W_electrics = 0.8*g_0
-    W_PL = 2*g_0                      #TODO: different payload options
+    W_PL = 0.113*g_0                      #TODO: different payload options
     W_tail = 0.20 *g_0                  #TODO: actual weight
     spar_weight_per_meter = 0.4*g_0 #N
 
@@ -93,17 +93,17 @@ if __name__ =="__main__":
         W = W_wing+W_PL+W_fus+W_electrics+W_spar+W_tail
         # print(W, W_last)
     print(f"##################REPORT#################")
-    print("total weight:", round(float(W),2), "[N]")
-    print("wing weight:", round(float(W_wing),2), "[N]")
-    print("spar weight:", round(float(W_spar),2), "[N]")
-    print("payload weight: ", round(float(W_PL),2), "[N]")
-    print("fuselage weight:", round(float(W_fus),2), "[N]")
-    print("tail weight:", round(float(W_tail),2), "[N]")
+    print("total weight:", round(float(W),3), "[N]")
+    print("wing weight:", round(float(W_wing),3), "[N]")
+    print("spar weight:", round(float(W_spar),3), "[N]")
+    print("payload weight: ", round(float(W_PL),3), "[N]")
+    print("fuselage weight:", round(float(W_fus),3), "[N]")
+    print("tail weight:", round(float(W_tail),3), "[N]")
     print("electronics weight:", round(float(W_electrics),2), "[N]")
-    print("surface area: ", round(float(S),2) , "[m^2]")
-    print("mean aerodynamic cord",  round(float(c),2), "[m]")
-    print("span",  round(float(b),2), "[m]")
-    print("landing speed:",round(float(V_0*1.15),2),"[m/s]")
+    print("surface area: ", round(float(S),3) , "[m^2]")
+    print("mean aerodynamic cord",  round(float(c),3), "[m]")
+    print("span",  round(float(b),3), "[m]")
+    print("landing speed:",round(float(V_0*1.15),3),"[m/s]")
     print("################END REPORT###############")
 
     #save results:
