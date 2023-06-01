@@ -75,7 +75,7 @@ if __name__ =="__main__":
     AR = 10
     highest_altitude = 33_000
     lowest_altitude = 0
-    max_mach_no =0.8
+    max_mach_no =0.5
     fill_coefficient = 0.70
     thickness = 0.12
     g_0 = 9.81
@@ -94,7 +94,7 @@ if __name__ =="__main__":
     V_0 = V_ground(highest_altitude, lowest_altitude, max_mach_no)
 
     W_last = 0
-
+    n_iterations = 0
     while abs(W_last-W)>0.01:
         W_last = W
         c, b, S = span_cord_area(V_0, W, C_L, AR, lowest_altitude)
@@ -102,7 +102,10 @@ if __name__ =="__main__":
         W_spar = b*spar_weight_per_meter
         W = W_wing+W_PL+W_fus+W_electrics+W_spar+W_tail
         # print(W, W_last)
+        n_iterations+=1
     print(f"##################REPORT#################")
+    print("number of itterations required for convergene:")
+    print(n_iterations)
     print("total weight:", round(float(W),3), "[N]")
     print("wing weight:", round(float(W_wing),3), "[N]")
     print("spar weight:", round(float(W_spar),3), "[N]")
