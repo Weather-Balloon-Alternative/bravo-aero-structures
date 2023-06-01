@@ -87,19 +87,19 @@ def descent_range_and_time_calculation(rho, V, V_wind, C_L_array, CD0, AR, e, W,
     return Range, descent_time
 
 
+if __name__ =="__main__":
+    rho = ambiance.Atmosphere(np.array(range(33_000))).density
+    SOS = ambiance.Atmosphere(np.array(range(33_000))).speed_of_sound
 
-rho = ambiance.Atmosphere(np.array(range(33_000))).density
-SOS = ambiance.Atmosphere(np.array(range(33_000))).speed_of_sound
-
-W = 39.32
-S = 0.104
-CD0 =0.25 #very preliminary
-AR = 8
-e = 0.9
-x=np.arange(0.01,1.1,0.01)
-a = CD0**2
-b = 2*CD0*1/(np.pi*AR*e)
-c = 1/(np.pi**2*AR**2*e**2)
-V_wind = np.ones(33_000)*10       #m/s headwind, negative values tailwind
-V, C_L_array = flight_velocity_profile(CD0, AR, e, rho, V_wind, W, S,SOS)
-print(descent_range_and_time_calculation(rho, V, V_wind, C_L_array, CD0, AR, e, W, S, 28_000))
+    W = 39.32
+    S = 0.104
+    CD0 =0.25 #very preliminary
+    AR = 8
+    e = 0.9
+    x=np.arange(0.01,1.1,0.01)
+    a = CD0**2
+    b = 2*CD0*1/(np.pi*AR*e)
+    c = 1/(np.pi**2*AR**2*e**2)
+    V_wind = np.ones(33_000)*10       #m/s headwind, negative values tailwind
+    V, C_L_array = flight_velocity_profile(CD0, AR, e, rho, V_wind, W, S,SOS)
+    print(descent_range_and_time_calculation(rho, V, V_wind, C_L_array, CD0, AR, e, W, S, 28_000))
