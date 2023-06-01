@@ -17,22 +17,32 @@ def flight_velocity_profile(CD0, AR, e, rho, V_wind, W, S, SOS):
             V: array of floats,         optimum velocities at the altitudes length n
             C_L_array: array of floats, lift coefficients belonging to velocities of length n
     """
+    #range of operable C_L coefficients:
     x=np.arange(0.01,1.1,0.01)
+
+    #terms that are required for the following equations
     a = CD0**2
     b = 2*CD0*1/(np.pi*AR*e)
     c = 1/(np.pi**2*AR**2*e**2)
+    
+    #making lift coefficients for every altitutde
     C_L_array =[]
     for i in range(len(rho)):
+        #insanely dificult derivative which has to be computed for all CL values
         y = ((W/S)*(2/rho[i]))**0.5*(a-x**2*(b+3*c*x**2))/(2*x**0.5*(a+b*x**2+c*x**4)**1.5)-2*x**2/(CD0**2+2*CD0*x**2/(np.pi*AR*e)+x**4/(np.pi*AR*e)**2)*V_wind[i]
 
+        #instering C_L in case the result does not go below zero (which is needed for the derivative)
         if y[-1]>0:
             C_L =x[-1]
             C_L_array.append(float(C_L))
         else:
             C_L= x[np.argwhere(y<0)[0]]
             C_L_array.append(float(C_L))
-    print(len(C_L_array))
+    
+    #calculate velocities
     V = ((W/S)*(2/rho)*(1/C_L))**0.5
+    
+    #update velocity and CL in case of crossing 0.8 speed of sound barrier
     for i in range(len(V)):
         if V[i]>0.8*SOS[i]:
             V[i]=0.8*SOS[i]
@@ -58,13 +68,21 @@ def descent_range_and_time_calculation(rho, V, V_wind, C_L_array, CD0, AR, e, W,
             descent_time: float,        Expected descent time
     
     """
+    #calculate CD for all altitudes
     C_D = CD0+C_L_array**2/(np.pi*AR*e)
+    #calcualte the drag for all altitudes
     D = 0.5*rho*V**2*S*C_D
+    #calculate the power required for all altitudes
     P_req = D*V
+    #calculate the required descent velocity for that energy height.
     V_descent = P_req/W
+    #calculate the time that will be traversed at these altitudes.
     T= 1/V_descent
+    #calculate the range that can be attained based on this
     R = ((V**2-V_descent**2)**0.5-V_wind)*T
+    #sum the steerable range (from which one can argue that they are in control of the vehicle)
     Range = sum(R[:max_control_alt+1])
+    #sum the total descent time
     descent_time = sum(T)
     return Range, descent_time
 

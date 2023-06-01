@@ -10,9 +10,13 @@ def V_ground(highest_altitude, lowest_altitude,max_mach_no):
     OUTPUTS:
         V_ground: float,                    Speed at which the aircraft will stall at ground level
     """
+    #calculate the stall speed at maximum service ceilling
     V_max = ambiance.Atmosphere(highest_altitude).speed_of_sound*max_mach_no
+    #calculate the density at service ceilling
     rho_max = ambiance.Atmosphere(highest_altitude).density
+    #calculate the density at lowest altitude
     rho_0 = ambiance.Atmosphere(lowest_altitude).density
+    #use relation to get the stall speed at ground level
     V_ground = V_max * (rho_max/rho_0)**0.5
     return V_ground
 
@@ -31,7 +35,9 @@ def span_cord_area(V_ground, W, C_L, AR, lowest_altitude):
 
     """
     rho_0 = ambiance.Atmosphere(lowest_altitude).density
+    #calculate surface area based on inputs
     S = 2*W/(rho_0*V_ground**2*C_L)
+    #use aspect ratio for span and cord
     c = (S/AR)**0.5
     b = AR*c
     return c, b, S
@@ -48,9 +54,13 @@ def wing_mass(b, S, taper_ratio, rho_material, fill_coefficient, thickness ):
     OUTPUTS:
 
     """
+    #calculate rootcord
     C_r = (2*S/b)/(1+taper_ratio)
+    #calculate tipcord
     C_t = C_r*taper_ratio
+    #calculate volume following this
     Volume = 2*((b/2)*((C_r+C_t)/2)*fill_coefficient)*thickness
+    #calculate mass of the material
     mass = Volume*rho_material
     return mass
 
