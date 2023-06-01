@@ -72,8 +72,8 @@ if __name__ =="__main__":
 
     #design specific variables
     V_fus = 0.017
-    W_electrics = 0.8*g_0
-    W_PL = 0.113*g_0                      #TODO: different payload options
+    W_electrics = 1.2*g_0
+    W_PL = 2.0*g_0                      #TODO: different payload options
     W_tail = 0.20 *g_0                  #TODO: actual weight
     spar_weight_per_meter = 0.4*g_0 #N
 
