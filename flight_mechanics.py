@@ -42,8 +42,8 @@ def flight_velocity_profile(CD0, AR, e, rho, V_wind, W, S, SOS):
             V[i]=0.8*SOS[i]
             C_L_array[i] = float((W/S)*(2/rho[i])*(1/V[i]**2))
     C_L_array = np.array(C_L_array)
-    plt.plot(V,np.arange(len(V))*10)
-    plt.plot(V-V_wind, np.arange(len(V))*10)
+    plt.plot(V,np.arange(len(V))*10+200)
+    plt.plot(V-V_wind, np.arange(len(V))*10+200)
     plt.xlabel("height [m]")
     plt.ylabel("speed [m/s]")
     return V, C_L_array
@@ -112,7 +112,17 @@ if __name__ =="__main__":
     # V_wind = np.ones(33_000)*10       #m/s headwind, negative values tailwind
     #calculations for average airspeed
     V, C_L_array = flight_velocity_profile(CD0, AR, e, rho, V_wind, W, S,SOS)
-    print(descent_range_and_time_calculation(rho, V, V_wind, C_L_array, CD0, AR, e, W, S, 28_000,resolution))
-    plt.title("maximum wind speed conditions")
+    print(descent_range_and_time_calculation(rho, V, V_wind, C_L_array, CD0, AR, e, W, S, 27_000,resolution))
+    plt.title("average wind speed conditions")
+    plt.legend(("True airspeed", "True groundspeed"))
+    plt.show()
+
+    #calculations for maximum wind speed
+    V_wind= df.loc["maximum_windspeed"]
+    V_wind = V_wind.to_numpy()
+    V_wind = V_wind[20:]        #20 because the first like 15 measurements are not a number
+    V, C_L_array = flight_velocity_profile(CD0, AR, e, rho, V_wind, W, S,SOS)
+    print(descent_range_and_time_calculation(rho, V, V_wind, C_L_array, CD0, AR, e, W, S, 27_000,resolution))
+    plt.title("average wind speed conditions")
     plt.legend(("True airspeed", "True groundspeed"))
     plt.show()
