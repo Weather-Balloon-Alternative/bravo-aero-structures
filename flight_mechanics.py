@@ -29,8 +29,11 @@ def flight_velocity_profile(CD0, AR, e, rho, V_wind, W, S, SOS):
     #making lift coefficients for every altitutde
     C_L_array =[]
     for i in range(len(rho)):
-        #insanely dificult derivative which has to be computed for all CL values
-        y = ((W/S)*(2/rho[i]))**0.5*(a-x**2*(b+3*c*x**2))/(2*x**0.5*(a+b*x**2+c*x**4)**1.5)-2*x**2/(CD0**2+2*CD0*x**2/(np.pi*AR*e)+x**4/(np.pi*AR*e)**2)*V_wind[i]
+        #insanely dificult derivative which has to be computed for all CL values #TODO: redo this calculation and find confidence in found results. 
+        # y = ((W/S)*(2/rho[i]))**0.5*(a-x**2*(b+3*c*x**2))/(2*x**0.5*(a+b*x**2+c*x**4)**1.5)+(-2*x**2/(CD0**2+2*CD0*x**2/(np.pi*AR*e)+x**4/(np.pi*AR*e)**2)+1/(CD0+x**2/(np.pi*AR*e)))*V_wind[i]/W
+        y = ((1/(S*W))*(2/rho[i]))**0.5*(a-x**2*(b+3*c*x**2))/(2*x**0.5*(a+b*x**2+c*x**4)**1.5)+(((CD0+x**2/(np.pi*AR*e))-2*x**2/(np.pi*AR*e))/((CD0+x**2/(np.pi*AR*e))**2))*V_wind[i]/W
+        # print(np.average(((W/S)*(2/rho[i]))**0.5*(a-x**2*(b+3*c*x**2))/(2*x**0.5*(a+b*x**2+c*x**4)**1.5)))
+        # print(np.average((-2*x**2/(CD0**2+2*CD0*x**2/(np.pi*AR*e)+x**4/(np.pi*AR*e)**2)+1/(CD0+x**2/(np.pi*AR*e)))*V_wind[i]/W))
         #instering C_L in case the result does not go below zero (which is needed for the derivative)
         if y[-1]>0:
             C_L =x[-1]
@@ -48,6 +51,10 @@ def flight_velocity_profile(CD0, AR, e, rho, V_wind, W, S, SOS):
             V[i]=0.8*SOS[i]
             C_L_array[i] = float((W/S)*(2/rho[i])*(1/V[i]**2))
     C_L_array = np.array(C_L_array)
+    plt.plot(V)
+    plt.plot(V-V_wind)
+    plt.xlabel("height [m]")
+    plt.ylabel("speed [m/s]")
     return V, C_L_array
 
 def descent_range_and_time_calculation(rho, V, V_wind, C_L_array, CD0, AR, e, W, S, max_control_alt, resolution):
@@ -91,17 +98,17 @@ if __name__ =="__main__":
     rho = ambiance.Atmosphere(np.array(range(33_000))).density
     SOS = ambiance.Atmosphere(np.array(range(33_000))).speed_of_sound
 
-    W = 39.32
-    S = 0.104
-    CD0 = 0.0307#very preliminary
-    AR = 8
+    W = 44.561
+    S = 0.21
+    CD0 = 0.0229#very preliminary
+    AR = 10
     e = 0.9
     x=np.arange(0.01,1.1,0.01)
     a = CD0**2
     b = 2*CD0*1/(np.pi*AR*e)
     c = 1/(np.pi**2*AR**2*e**2)
     df = pd.read_json('atmospheric_characteristics.json')
-    V_wind= df.loc["maximum_windspeed"]
+    V_wind= df.loc["average_windspeed"]
     V_wind = V_wind.to_numpy()
     rho = df.loc["density"]
     rho = rho.to_numpy()
@@ -109,5 +116,28 @@ if __name__ =="__main__":
     SOS = SOS.to_numpy()
     resolution = int(df.loc["h"].iloc[1]-df.loc["h"].iloc[0])
     # V_wind = np.ones(33_000)*10       #m/s headwind, negative values tailwind
+    #calculations for average airspeed
     V, C_L_array = flight_velocity_profile(CD0, AR, e, rho, V_wind, W, S,SOS)
-    print(descent_range_and_time_calculation(rho, V, V_wind, C_L_array, CD0, AR, e, W, S, 20_000,resolution))
+    print(descent_range_and_time_calculation(rho, V, V_wind, C_L_array, CD0, AR, e, W, S, 28_000,resolution))
+    plt.title("average wind speed conditions")
+    plt.legend(("True airspeed", "True groundspeed"))
+    plt.show()
+
+    #calculations for 95 percentile airspeed
+    V_wind1= df.loc["maximum_windspeed"]
+    V_wind1 = V_wind1.to_numpy()
+    V_wind = (V_wind1+2*V_wind)/3       #TODO: not actual 95 percentile windspeeds
+    V, C_L_array = flight_velocity_profile(CD0, AR, e, rho, V_wind, W, S,SOS)
+    print(descent_range_and_time_calculation(rho, V, V_wind, C_L_array, CD0, AR, e, W, S, 28_000,resolution))
+    plt.title("95 percentile wind speed conditions")
+    plt.legend(("True airspeed", "True groundspeed"))
+    plt.show()
+
+    #calculations for maximum airspeed
+    V_wind= df.loc["maximum_windspeed"]
+    V_wind = V_wind.to_numpy()
+    V, C_L_array = flight_velocity_profile(CD0, AR, e, rho, V_wind, W, S,SOS)
+    print(descent_range_and_time_calculation(rho, V, V_wind, C_L_array, CD0, AR, e, W, S, 28_000,resolution))
+    plt.title("maximum wind speed conditions")
+    plt.legend(("True airspeed", "True groundspeed"))
+    plt.show()
