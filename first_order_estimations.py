@@ -75,14 +75,14 @@ if __name__ =="__main__":
     AR = 10
     highest_altitude = 33_000
     lowest_altitude = 0
-    max_mach_no =0.5
+    max_mach_no =0.6
     fill_coefficient = 0.70
     thickness = 0.12
-    g_0 = 9.81
+    g_0 = 9.80665
 
     #design specific variables
     V_fus = 0.017
-    W_electrics = 1.2*g_0
+    W_electrics = 0.9*g_0
     W_PL = 2.0*g_0                      #TODO: different payload options
     W_tail = 0.20 *g_0                  #TODO: actual weight
     spar_weight_per_meter = 0.4*g_0 #N
@@ -103,9 +103,8 @@ if __name__ =="__main__":
         W = W_wing+W_PL+W_fus+W_electrics+W_spar+W_tail
         # print(W, W_last)
         n_iterations+=1
-    print(f"##################REPORT#################")
-    print("number of itterations required for convergene:")
-    print(n_iterations)
+    print(f"######################REPORT#####################")
+    print("number of itterations required for convergene:", n_iterations)
     print("total weight:", round(float(W),3), "[N]")
     print("wing weight:", round(float(W_wing),3), "[N]")
     print("spar weight:", round(float(W_spar),3), "[N]")
@@ -115,9 +114,10 @@ if __name__ =="__main__":
     print("electronics weight:", round(float(W_electrics),2), "[N]")
     print("surface area: ", round(float(S),3) , "[m^2]")
     print("mean aerodynamic cord",  round(float(c),3), "[m]")
+    print("root cord",  round(float(2*c/(1+tr)),3), "[m]")
     print("span",  round(float(b),3), "[m]")
     print("landing speed:",round(float(V_0*1.15),3),"[m/s]")
-    print("################END REPORT###############")
+    print("####################END REPORT###################")
 
     #save results:
     # userinput= input("do you want to print the results? (y/n)")
