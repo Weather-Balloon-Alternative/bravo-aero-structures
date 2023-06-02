@@ -101,7 +101,7 @@ if __name__ =="__main__":
     df = pd.read_json('atmospheric_characteristics.json')
     V_wind= df.loc["average_windspeed"]
     V_wind = V_wind.to_numpy()
-    V_wind = V_wind[20:]
+    V_wind = V_wind[20:]        #20 because the first like 15 measurements are not a number
     rho = df.loc["density"]
     rho = rho.to_numpy()
     rho = rho[20:]
