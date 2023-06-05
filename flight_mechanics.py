@@ -90,10 +90,10 @@ if __name__ =="__main__":
     rho = ambiance.Atmosphere(np.array(range(33_000))).density
     SOS = ambiance.Atmosphere(np.array(range(33_000))).speed_of_sound
 
-    W = 19.048  #    #first itteration
-    S = 0.0896  #0.21#first itteration
-    CD0 = 0.027 #0.0229#first itteration
-    AR = 8.5
+    W = 18.671  #    #first itteration
+    S = 0.0878  #0.21#first itteration
+    CD0 = 0.035 #0.0229#first itteration
+    AR = 10
     e = 0.9
     x=np.arange(0.01,1.1,0.01)
     a = CD0**2
@@ -142,7 +142,7 @@ if __name__ =="__main__":
     print(descent_range_and_time_calculation(rho, V, V_wind, C_L_array, CD0, AR, e, W, S, 27_000,resolution))
     plt.title("no wind conditions")
     plt.legend(("True airspeed", "True groundspeed"))
-    plt.show()
+    # plt.show()
 
     #average conditions
     df = pd.read_json('windprofiles_sonde_data.json')
@@ -158,7 +158,7 @@ if __name__ =="__main__":
     print(descent_range_and_time_calculation(rho, V, V_wind, C_L_array, CD0, AR, e, W, S, 27_000,resolution))
     plt.title("average wind conditions")
     plt.legend(("True airspeed", "True groundspeed"))
-    plt.show()
+    # plt.show()
 
     #2 ssd conditions
     df = pd.read_json('windprofiles_sonde_data.json')
@@ -174,7 +174,7 @@ if __name__ =="__main__":
     print(descent_range_and_time_calculation(rho, V, V_wind, C_L_array, CD0, AR, e, W, S, 27_000,resolution))
     plt.title("2 SSD wind conditions")
     plt.legend(("True airspeed", "True groundspeed"))
-    plt.show()
+    # plt.show()
 
     #3 ssd conditions
     df = pd.read_json('windprofiles_sonde_data.json')
@@ -190,4 +190,4 @@ if __name__ =="__main__":
     print(descent_range_and_time_calculation(rho, V, V_wind, C_L_array, CD0, AR, e, W, S, 27_000,resolution))
     plt.title("3 SSD wind conditions")
     plt.legend(("True airspeed", "True groundspeed"))
-    plt.show()
+    # plt.show()
