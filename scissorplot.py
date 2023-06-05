@@ -146,5 +146,8 @@ def scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xac,Clah,ClaAh,deda,SM,xcg_fwBAR,xcg_aftB
     return {'ShS': [ShS_C_xfw,ShS_S_xaft][ShSmax_id],
             'xcg_waste': deltaxcg}
 
-# k = scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xacbar,Clah,ClaAh,deda,SM,xcg_fwBAR,xcg_aftBAR)
-# print(k)
+# d = - 0.1151451514515145/4 - 0.02588425884258838/4 - 0.005814058140581391/4 - 0.0013040130401303918/4
+d = 0
+k = scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xacbar+d,Clah,ClaAh,deda,SM,xcg_fwBAR,xcg_aftBAR,IgnoreErrors=True)
+print(k)
+print(d)
