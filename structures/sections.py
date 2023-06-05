@@ -13,14 +13,20 @@ class composite_section():
 
 	def get_centroid(self):
 		num = den = 0
-		for section in self.sections:
+		for section in self.sections: # maybe this could be rewritten to use np broadcasting
 			num += section.E*section.A*section.offset
 			den += section.E*section.A
 		self.centroid = num/den
 
 	def get_curvature_radius(self, Mx, My):
 		self.curvature_radius = 0 #TODO
-		
+		R_x = R_y = 0
+		for section in self.sections:
+			R_x += section.E*section.I_xx
+			R_y += section.E*section.I_yy
+
+		R_x /= M_x
+		R_y /= M_y
 
 
 
@@ -37,18 +43,25 @@ class ellipse():
 		self.E = mat_prop[0]
 		self.sigma_y = mat_prop[1]
 
-		self.area()
+		self.get_area()
+		self.get_I()
+		self.get_J()
+
+	def set_inner_t(self, t):
+		self.ai = self.ao - t
+		self.bi = self.bo - t
+		self.get_area()
 		self.get_I()
 		self.get_J()
 		return self
 
-	def area(self):
-		self.area = np.pi*(ao*bo-ai*bi)
+	def get_area(self):
+		self.area = np.pi*(self.ao*self.bo-self.ai*self.bi)
 		return self.area
 
 	def get_I(self):
-		self.I_xx = 0.25*np.pi*(self.ao*self.bo**3 - self.ai*self.bi**3) + A*offset[1]**2
-		self.I_yy = 0.25*np.pi*(self.bo*self.ao**3 - self.bi*self.ai**3) + A*offset[0]**2
+		self.I_xx = 0.25*np.pi*(self.ao*self.bo**3 - self.ai*self.bi**3) + self.area*self.offset[1]**2
+		self.I_yy = 0.25*np.pi*(self.bo*self.ao**3 - self.bi*self.ai**3) + self.area*self.offset[0]**2
 		return self.I_xx, self.I_yy
 
 	def get_J(self):
@@ -74,7 +87,6 @@ class rectangle():
 
 		self.area()
 		self.get_I()
-		return self
 
 	def area(self):
 		self.area =  bo*ho - bi*hi

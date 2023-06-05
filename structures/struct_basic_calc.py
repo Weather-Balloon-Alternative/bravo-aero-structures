@@ -2,19 +2,23 @@ import numpy as np
 from airfoils import Airfoil
 import matplotlib.pyplot as plt
 import scipy.integrate
+import sections
 
 
 
 
 
-def get_aero_loads(y, W, b, c, n, Ar, e, CLmax, Cmac):
+def get_aero_loads(planform, W, n, Cmac, CLmax):
 	#Calculate the loads at a location on the wing based on a given weight and load factor
 	#for now only at root
-	L_center = b/6 #rough estimate for elliptical distr
+	L_center = planform["span"]*(4/(3*np.pi)) #elliptical lift distr
 	L = W*n
-	D_center = b/4 #rough estimate
-	D = (L**2)/(np.pi*Ar*e) #estimate drag based on current lift, ignore cd0
-	M = (Cmac/CLmax)*c
+	D_center = planform["span"]/4 #rough estimate
+	D = (L**2)/(np.pi*planform["aspect"]*planform["efficiency"]) #estimate drag based on current lift, ignore cd0
+	M_z = (Cmac/CLmax)*planform["mac"] # directions are based on structural analysis coordinate system
+	M_x = L*L_center
+	M_y = D*D_center
+	return {"M_x":M_x, "M_y":M_y, "M_z":M_z}
 
 
 def gen_airfoil_shape(c, tc, plot=False):
@@ -43,31 +47,74 @@ def wing_volume(cr, tapre_rat, span, tc=0.12):
 	return V
 
 
-def planform(b, Ar, tapre_rat):
+def planform(S, Ar, tapre_rat, tc, e):
 	#calculate wing platform properties based on span, aspect ratio and tapre ratio
-	S = (b**2)/Ar
+	b = np.sqrt(Ar*S)
 	mac = b/Ar
 	c_root = (2*S)/((1+tapre_rat)*b)
 	c_tip = tapre_rat*c_root
-	return {"S":S, "mac":mac, "c_root":c_root, "c_tip":c_tip, "span":b, "aspect":Ar, "tapre":tapre_rat}
+	return {"S":S, "mac":mac, "c_root":c_root, "c_tip":c_tip, "span":b, "aspect":Ar, "tapre":tapre_rat, "tc":tc, "efficiency":e}
+
+def wing_cs_sizing(planform, loads, f_S):
+
+	a_ellipse = planform["c_root"]*0.5 # ellipse half width
+	b_ellipse = planform["tc"]*planform["c_root"]*0.5 # ellipse half height
+
+
+	mat_prop_skin = (28e9, 500e6)
+	t_min = 0
+	t_max = 1e-3
+	wing_skin = sections.ellipse((a_ellipse-t_min, b_ellipse-t_min, a_ellipse, b_ellipse), (0,0), mat_prop_skin)
+	print("test", wing_skin.I_xx, wing_skin.I_yy)
+	print(f_S)
+
+
+
+	for i in range(20):
+		t_mid = (t_min + t_max)*0.5
+	
+		wing_skin.set_inner_t(t_min)
+		f_min = (loads["M_x"]*b_ellipse)/wing_skin.I_xx - wing_skin.sigma_y/f_S
+
+		wing_skin.set_inner_t(t_mid)
+		f_mid = (loads["M_x"]*b_ellipse)/wing_skin.I_xx - wing_skin.sigma_y/f_S
+
+		if f_min*f_mid < 0:
+			t_max = t_mid
+		else:
+			t_min = t_mid
+
+		#print(wing_skin.I_xx, f_mid, t_mid)
+	
+	wing_skin.set_inner_t(t_max)
+	stress_max = (loads["M_x"]*b_ellipse)/wing_skin.I_xx
+	print("thickness required: {} mm, max stress: {} MPa".format(t_max*1000, stress_max/1e6))
+
+
+
 
 
 
 
 	
 if __name__=="__main__":
-	Wt = 25
-	bt = 1.5
-	ARt = 8
+	#Sizing values
+	Wt = 15
+	WoS = 100000
+	nt = 2.5
+	#St = Wt/WoS
+	St = 0.0539
+	ARt = 3.4805
+	tct = 0.12
 	tapre_ratt = 0.6
-	planform_prop = planform(bt, ARt, tapre_ratt)
+	#planform_prop = planform(St, ARt, tapre_ratt, tct, 0.85) #generate planform
+	planform_prop = {"S":St, "mac":0.088, "c_root":0.11, "c_tip":0.066, "span":0.306286*2, "aspect":ARt, "tapre":tapre_ratt, "tc":tct, "efficiency":0.8}
 	print(planform_prop)
 
-	nt = 2.5
-	d_max_t = 7e-3
+	loads_t = get_aero_loads(planform_prop, Wt, nt, -0.04, 2) # this could also come directly from openvsb
+	
+	wing_cs_sizing(planform_prop, loads_t, 1.5*1.5)
 
-	mat_prop_cfrp = [650e6]
-	res = spar_sizing(Wt, bt, nt, d_max_t, mat_prop_cfrp)
-	print(res[0]*1000, res[1]*1000)
-	gen_airfoil_shape(1, 0.16, plot=True)
-	print(wing_volume(planform_prop['c_root'], tapre_ratt, bt)*25*1000)
+	#gen_airfoil_shape(1, 0.16, plot=True)
+	#print(wing_volume(planform_prop['c_root'], tapre_ratt, bt)*25*1000)
+
