@@ -47,3 +47,30 @@ def tailsizing(b,c,ShS=0.1,Arh=4,lhc=5,Arv = 1.1):
     tailpar['S_v'] = tailpar['b_v'] * tailpar['c_v']
 
     return tailpar
+
+def masscalc(b,c,density,A_c):
+    """Mass calculation of a basic wing section
+
+    Args:
+        b (float): wing span
+        c (float): MAC
+        density (float): materical density
+        A_c (float): ratio of airfoil area over the MAC
+
+    Returns:
+        float: wing section mass
+    """   
+    m = A_c*c*b*density
+    return m 
+
+# b = 0.936
+# S = 0.0876
+# c = S / b
+# A_c = 0.07995 # For NACA0012
+# rho = 75
+
+# tailpar = tailsizing(b,c)
+# mhor = masscalc(tailpar['b_h'],tailpar['c_h'],rho,A_c)
+# mver = masscalc(tailpar['b_v'],tailpar['c_v'],rho,A_c)
+# print(mhor,mver)
+# print(f'total mass: {(mhor+mver)*1000} g')
