@@ -6,6 +6,7 @@ SM = 0.05 # Stability margin
 # From statistics:
 Vh = 0.5    # Horizontal tail volume TODO: From Airplane Design (Sadraey)
 lhc = 4     # Ratio of the tail length over the chord TODO: From Airplane Design
+ShS=0.15
 
 # From Structures:
 xcgbar = 0.25  # location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
@@ -13,23 +14,16 @@ xcg_fwBAR = 0.2  # most forward location of the centre of gravity divided by the
 xcg_aftBAR = 0.3  # most aft location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
 
 # From Aerodynamics:
-
+## Geometry
 b = 0.767928166   # Span TODO: Initial guess from Marten
 AR = 8.532535173     # Aspect ratio of the main wing TODO: Initial guess from Marten
 S = b**2/AR    # Wing surface 
 ARh = 4     # Aspect ratio of the horizontal tail TODO: Very much taken from the A-10, can change
 xacbar = 0.137686198  # location of the aerodynamic centre divided by the MAC TODO: From Marten
 c = S/b       # MAC
-Clah = -5.73    # derivative of the lift coefficient of the tail w.r.t. alpha TODO: In Rad, from Sailplane Design (Thomas)
-ClaAh = 5.73   # derivative of lift coefficient of the aircraft without the tail w.r.t alpha TODO: FILL IN
-deda = 1-0.725    # derivative of the downwash angle w.r.t. alpha TODO: Estimated from Sailplane Design (Thomas)
-VhV = 1     # ratio of the velocity at the tail over the aircraft velocity TODO: Guesstimate, just neglect for now
-CLh = -0.35*ARh**(1/3)     # lift coefficient of the tail
-CLAh = 0.4 - VhV    # lift coefficient of the aircraft without the tail TODO: Guesstimate
-Cmac = -0.015    # moment coefficient of the aerodynamic centre TODO: Estimate from Marten
 lh = lhc*c  # Tail length TODO: Ideally this would be obtained from iteration
 
-# Stability stuff for symmetric
+## Stability stuff for symmetric
 muc = 0 #relative density [=m/(rho*S*c)]
 V0 = 0 #aircraft speed
 CZadot = 0 #derivative of Cz w.r.t. alpha_dot*c/V0
@@ -49,7 +43,7 @@ CXde = 0 #derivative of CX w.r.t. delta_e
 CZde = 0 #derivative of CZ w.r.t. delta_e
 Cmde = 0 #elevator efficiency, derivative of Cm w.r.t. delta_e
 
-# Stability stuff for asymmetric
+## Stability stuff for asymmetric
 CYbdot = 0 #derivative of CY w.r.t. beta_dot
 mub = 0 #relative density [=m/(rho*S*b)]
 b = 0 #wing span
@@ -73,7 +67,15 @@ Cldr = 0 #derivative of Cl w.r.t. delta_r
 Cnda = 0 #derivative of Cn w.r.t. delta_a
 Cndr = 0 #derivative of Cn w.r.t. delta_r
 
-
+## Misc.
+CLa = 4.946591 # derivative of the lift coefficient of the aircraft
+ClaAh = 5.73   # derivative of the lift coefficient of the aircraft without the tail w.r.t alpha TODO: FILL IN
+Clah = -5.73    # derivative of the lift coefficient of the tail w.r.t. alpha TODO: In Rad, from Sailplane Design (Thomas)
+deda = 1-0.725    # derivative of the downwash angle w.r.t. alpha TODO: Estimated from Sailplane Design (Thomas)
+VhV = 1     # ratio of the velocity at the tail over the aircraft velocity TODO: Guesstimate, just neglect for now
+CLh = -0.35*ARh**(1/3)     # lift coefficient of the tail
+CLAh = CL - VhV**2*ShS*CLh    # lift coefficient of the aircraft without the tail
+Cmac = -0.015    # moment coefficient of the aerodynamic centre TODO: Estimate from Marten
 
 
 

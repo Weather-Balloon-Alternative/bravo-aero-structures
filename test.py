@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
-x = pd.read_csv('Aero_output\glider v7 small_DegenGeom.stab')
-print(x)
+x = np.array([1,1,1,1])
+print(np.where(x == 1)[0])
