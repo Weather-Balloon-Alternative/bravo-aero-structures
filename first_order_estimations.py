@@ -52,7 +52,7 @@ def wing_mass(b, S, taper_ratio, rho_material, fill_coefficient, thickness ):
             fill_coefficient; float btwn 0 and 1fill coefficient of the airfoil
             thickness: float,                   thickness of the airfoil
     OUTPUTS:
-
+            mass: float,                        mass estimate of the wing
     """
     #calculate rootcord
     C_r = (2*S/b)/(1+taper_ratio)
@@ -68,11 +68,11 @@ def wing_mass(b, S, taper_ratio, rho_material, fill_coefficient, thickness ):
 
 if __name__ =="__main__":
     #input variables
-    rho_epo = 25 #kg/m^3
+    rho_epo = 75 #kg/m^3
     tr = 0.6 
     W_init = 50
     C_L = 1.1
-    AR = 10
+    AR = 8.5
     highest_altitude = 33_000
     lowest_altitude = 0
     max_mach_no =0.6
@@ -81,11 +81,12 @@ if __name__ =="__main__":
     g_0 = 9.80665
 
     #design specific variables
-    V_fus = 0.017
-    W_electrics = 0.9*g_0
-    W_PL = 2.0*g_0                      #TODO: different payload options
-    W_tail = 0.20 *g_0                  #TODO: actual weight
-    spar_weight_per_meter = 0.4*g_0 #N
+    V_fus = 0.0023            #first itteration 0.017
+    W_electrics = 0.5*g_0
+    W_PL = 0.10*g_0                      #TODO: different payload options
+    W_tail = 0.070 *g_0                  #TODO: actual weight
+    spar_weight_per_meter = 0.1*g_0 #N
+    SF = 1.3
 
     W_fus = rho_epo*V_fus*g_0
 
@@ -100,7 +101,7 @@ if __name__ =="__main__":
         c, b, S = span_cord_area(V_0, W, C_L, AR, lowest_altitude)
         W_wing = wing_mass(b, S, tr, rho_epo, fill_coefficient, thickness)*g_0
         W_spar = b*spar_weight_per_meter
-        W = W_wing+W_PL+W_fus+W_electrics+W_spar+W_tail
+        W = (W_wing+W_PL+W_fus+W_electrics+W_spar+W_tail)*SF
         # print(W, W_last)
         n_iterations+=1
     print(f"######################REPORT#####################")
@@ -112,7 +113,7 @@ if __name__ =="__main__":
     print("fuselage weight:", round(float(W_fus),3), "[N]")
     print("tail weight:", round(float(W_tail),3), "[N]")
     print("electronics weight:", round(float(W_electrics),2), "[N]")
-    print("surface area: ", round(float(S),3) , "[m^2]")
+    print("surface area: ", round(float(S),4) , "[m^2]")
     print("mean aerodynamic cord",  round(float(c),3), "[m]")
     print("root cord",  round(float(2*c/(1+tr)),3), "[m]")
     print("span",  round(float(b),3), "[m]")
