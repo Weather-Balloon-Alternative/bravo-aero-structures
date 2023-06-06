@@ -7,7 +7,7 @@ def read_json(file_name):
     return dict
 
 atmos_dict = read_json('atmospheric_characteristics.json')
-
+wind_dict = read_json('windprofiles_sonde_data.json')
 
 def Vgnd_over_D(C_L, rho, V_wind, C_D0, AR, oss, mass, S, g):
     C_D = C_D0 + C_L ** 2 / (np.pi * AR * oss)
@@ -35,11 +35,17 @@ h_range = np.arange(30_000, 1_000, -dh)
 flight_dict = {"h": [], "C_L": [], "L_over_D": [], "V_T": [], "V_ground": [], "V_descent": [], "D_t": [], "distance_travelled": []}
 distance = 0
 
+windspeed_ssd = 2 # 0, 1, 2, 3 ssd
+
+def windspeed(wind_dict, windspeed_ssd, h):
+    return wind_dict[str(h)]['mean'] + windspeed_ssd * wind_dict[str(h)]['ssd']
+
+
 for h in h_range:
     flight_dict["h"].append(int(h))
 
     Vgnd_over_sink_h = Vgnd_over_sink(C_L, atmos_dict[str(h)]['density'],
-                                    atmos_dict[str(h)]['maximum_windspeed'], C_D0, AR, oss, mass, S, g)
+                                    windspeed(wind_dict, windspeed_ssd, h), C_D0, AR, oss, mass, S, g)
 
     plt.plot(C_L, Vgnd_over_sink_h)
 
@@ -53,8 +59,8 @@ for h in h_range:
     V_T = np.sqrt((mass * g) / S * 2 / atmos_dict[str(h)]['density'] * 1 / C_L[index[0]])
     flight_dict["V_T"].append(V_T)
 
-    V_ground = V_T - atmos_dict[str(h)]['maximum_windspeed']
-    flight_dict["V_ground"].append(V_T - atmos_dict[str(h)]['maximum_windspeed'])
+    V_ground = V_T - windspeed(wind_dict, windspeed_ssd, h)
+    flight_dict["V_ground"].append(V_ground)
 
     V_descent = V_T / L_over_D_opt
     flight_dict["V_descent"].append(V_T / L_over_D_opt)
@@ -100,6 +106,11 @@ plt.xlabel("True Airspeed, V_TAS [m/s]")
 plt.ylabel("Altitude, h [m]")
 plt.show()
 
+plt.plot(flight_dict["V_ground"], h_range)
+plt.xlabel("Ground speed, V_ground [m/s]")
+plt.ylabel("Altitude, h [m]")
+plt.show()
+
 plt.plot(flight_dict["V_descent"], h_range)
 plt.xlabel("Descent Speed, V_descent [m/s]")
 plt.ylabel("Altitude, h [m]")
@@ -109,5 +120,3 @@ plt.plot(flight_dict["distance_travelled"], h_range)
 plt.xlabel("Distance, D [m]")
 plt.ylabel("Altitude, h [m]")
 plt.show()
-
-#hello
