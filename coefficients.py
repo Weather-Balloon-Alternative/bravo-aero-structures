@@ -1,5 +1,7 @@
 # Import from Aerodynamics and Structures
+import aeroloader
 
+coeff_dict = aeroloader.loadaero('Aero_output/glider_v7.xlsx')
 # From requirements:
 SM = 0.05 # Stability margin
 
@@ -23,6 +25,7 @@ xacbar = 0.137686198  # location of the aerodynamic centre divided by the MAC TO
 c = S/b       # MAC
 lh = lhc*c  # Tail length TODO: Ideally this would be obtained from iteration
 
+print(coeff_dict["Cmx"])
 ## Stability stuff for symmetric
 muc = 0 #relative density [=m/(rho*S*c)]
 V0 = 0 #aircraft speed
