@@ -1,19 +1,33 @@
 # Import from Aerodynamics and Structures
 import aeroloader
+import ambiance
+import numpy as np
 
-coeff_dict = aeroloader.loadaero('Aero_output/glider_v7.xlsx')
+coeff = aeroloader.loadaero('Aero_output/glider_v7.xlsx')
+coeff_notail = aeroloader.loadaero('Aero_output/glider_v7_wingonly.xlsx')
+
 # From requirements:
 SM = 0.05 # Stability margin
+h = 27000 # height
+atmos = ambiance.Atmosphere(h)
+rho = atmos.density # density
+g0 = atmos.grav_accel # gravitational acceleration
+V0 = 150 # velocity TODO: get actual figure from flight planning
 
 # From statistics:
 Vh = 0.5    # Horizontal tail volume TODO: From Airplane Design (Sadraey)
-lhc = 4     # Ratio of the tail length over the chord TODO: From Airplane Design
-ShS=0.15
+lhc = 4+0.008796802253736823     # Ratio of the tail length over the chord TODO: From Airplane Design
+ShS=0.10
 
 # From Structures:
-xcgbar = 0.25  # location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
-xcg_fwBAR = 0.2  # most forward location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
-xcg_aftBAR = 0.3  # most aft location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
+deltaxcg = 0.1
+xcgbar = 0.25+0.008796802253736823  # location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
+xcg_fwBAR = xcgbar-0.5*deltaxcg  # most forward location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
+xcg_aftBAR = xcgbar+0.5*deltaxcg  # most aft location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
+m = 19 / g0 # mass
+Ix = 0 # MMOI around x-axis
+Iy = 0 # MMOI around y-axis
+Iz = 0 # MMOI around z-axis
 
 # From Aerodynamics:
 ## Geometry
@@ -25,10 +39,8 @@ xacbar = 0.137686198  # location of the aerodynamic centre divided by the MAC TO
 c = S/b       # MAC
 lh = lhc*c  # Tail length TODO: Ideally this would be obtained from iteration
 
-print(coeff_dict["Cmx"])
 ## Stability stuff for symmetric
-muc = 0 #relative density [=m/(rho*S*c)]
-V0 = 0 #aircraft speed
+muc = m/(rho*S*c) #relative density [=m/(rho*S*c)]
 CZadot = 0 #derivative of Cz w.r.t. alpha_dot*c/V0
 Cmadot = 0 #derivative of Cm w.r.t. alpha_dot*c/V0
 KY2 = 0 #square of the nondimensional radius of gyration about the Y-axis [=I_y/(m*b)]
@@ -54,7 +66,7 @@ KX2 = 0 #square of the nondimensional radius of gyration about the X-axis [=I_x/
 KXZ = 0 #nondimensional product of inertia [=J_xz/(m*b)]
 KZ2 = 0 #square of the nondimensional radius of gyration about the Z-axis [=I_z/(m*b)]
 CYb = 0 #derivative of CY w.r.t. beta
-CL = 0 #lift coefficient
+CL = coeff['CL'][-1] #lift coefficient
 CYp = 0 #derivative of CY w.r.t. p*b/(2*V0)
 CYr = 0 #derivative of CY w.r.t. r*b/(2*V0)
 Clb = 0 #derivative of Cl w.r.t. beta
@@ -71,16 +83,15 @@ Cnda = 0 #derivative of Cn w.r.t. delta_a
 Cndr = 0 #derivative of Cn w.r.t. delta_r
 
 ## Misc.
-CLa = 4.946591 # derivative of the lift coefficient of the aircraft
-ClaAh = 5.73   # derivative of the lift coefficient of the aircraft without the tail w.r.t alpha TODO: FILL IN
-Clah = -5.73    # derivative of the lift coefficient of the tail w.r.t. alpha TODO: In Rad, from Sailplane Design (Thomas)
 deda = 1-0.725    # derivative of the downwash angle w.r.t. alpha TODO: Estimated from Sailplane Design (Thomas)
 VhV = 1     # ratio of the velocity at the tail over the aircraft velocity TODO: Guesstimate, just neglect for now
-CLh = -0.35*ARh**(1/3)     # lift coefficient of the tail
-CLAh = CL - VhV**2*ShS*CLh    # lift coefficient of the aircraft without the tail
-Cmac = -0.015    # moment coefficient of the aerodynamic centre TODO: Estimate from Marten
-
-
+CLAh = coeff_notail['CL'][-1]   # lift coefficient of the aircraft without the tail
+CLh = (CL-CLAh)/(VhV**2*ShS)    # lift coefficient of the tail
+CLa = (coeff['CL1'][-1] - CL)*180/np.pi # derivative of the lift coefficient of the aircraft
+CLaAh = (coeff_notail['CL1'][-1] - CL)*180/np.pi   # derivative of the lift coefficient of the aircraft without the tail w.r.t alpha 
+# CLah = (CLa - CLaAh) / (VhV**2*ShS*(1-deda))    # derivative of the lift coefficient of the tail w.r.t. alpha 
+CLah = 2 * np.pi * ARh / (ARh + 2)    # derivative of the lift coefficient of the tail w.r.t. alpha 
+Cmac = coeff['CMy'][-1] - CLAh*(xcgbar-xacbar)/c + (ShS*lhc*VhV**2)*CLh    # moment coefficient of the aerodynamic centre 
 
 # ###### TEST DATA ######
 # Vh = 0.41339

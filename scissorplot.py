@@ -26,7 +26,7 @@ def controllability(CLh,CLAh,lh,c,VhV,xcg,Cmac,xac):
     ShS = (xcg + Cmac - xac) / (CLh/CLAh * lh/c * VhV**2)
     return ShS
 
-def stability(Clah,ClaAh,deda,lh,c,VhV,xcg,xac,SM):
+def stability(CLah,CLaAh,deda,lh,c,VhV,xcg,xac,SM):
     '''
     Stability equation for the scissor plot,
     returns the ratio of tail area over wing area
@@ -47,10 +47,10 @@ def stability(Clah,ClaAh,deda,lh,c,VhV,xcg,xac,SM):
 
     ShS:    float, S_h/S;   ratio of tail area over wing area
     '''
-    ShS = (xcg - xac + SM) / (Clah/ClaAh * (1-deda) * lh/c * (VhV)**2)
+    ShS = (xcg - xac + SM) / (CLah/CLaAh * (1-deda) * lh/c * (VhV)**2)
     return ShS
 
-def scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xac,Clah,ClaAh,deda,SM,xcg_fwBAR,xcg_aftBAR,PLOT=True,resolution=10**5,IgnoreErrors=False):
+def scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xac,CLah,CLaAh,deda,SM,xcg_fwBAR,xcg_aftBAR,PLOT=True,resolution=10**5,IgnoreErrors=False):
     """
     Calculates the optimum ratio of tail area 
     over wing area for a given aerodynamic 
@@ -64,8 +64,8 @@ def scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xac,Clah,ClaAh,deda,SM,xcg_fwBAR,xcg_aftB
         VhV (float): ratio of the velocity at the tail over the aircraft velocity
         Cmac (float): moment coefficient of the aerodynamic centre
         xac (float): location of the aerodynamic centre divided by the chord
-        Clah (float): derivative of the lift coefficient of the tail w.r.t. alpha
-        ClaAh (float): derivative of lift coefficient of the aircraft without the tail w.r.t alpha
+        CLah (float): derivative of the lift coefficient of the tail w.r.t. alpha
+        CLaAh (float): derivative of lift coefficient of the aircraft without the tail w.r.t alpha
         deda (float): derivative of the downwash angle w.r.t. alpha
         SM (float): stability margin
         xcg_fwBAR (float): location of the most forward position of the c.g. on the chord as a fraction of the chord
@@ -90,7 +90,7 @@ def scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xac,Clah,ClaAh,deda,SM,xcg_fwBAR,xcg_aftB
     id_xfw = np.where(np.abs(xcgBAR - xcg_fwBAR) == np.min(np.abs(xcgBAR - xcg_fwBAR)))[0][0]
     id_xaft = np.where(np.abs(xcgBAR - xcg_aftBAR) == np.min(np.abs(xcgBAR - xcg_aftBAR)))[0][0]
     cntr = controllability(CLh,CLAh,lh,c,VhV,xcgBAR,Cmac,xac)
-    stab = stability(Clah,ClaAh,deda,lh,c,VhV,xcgBAR,xac,SM)
+    stab = stability(CLah,CLaAh,deda,lh,c,VhV,xcgBAR,xac,SM)
     
     if np.all(cntr - stab > 0): 
         if not IgnoreErrors:
@@ -115,17 +115,17 @@ def scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xac,Clah,ClaAh,deda,SM,xcg_fwBAR,xcg_aftB
         xi = x_S
         if x_S < xcg_aftBAR:
             if not IgnoreErrors:
-                raise ValueError('No solutions in this configuration, aft x_cgBAR is outside of stability region')
+                raise ValueError(f'No solutions in this configuration, aft x_cgBAR is outside of stability region (aft xcg_BAR={xcg_aftBAR}, x_S={x_S})')
             
         deltaxcg =  x_S - xcg_aftBAR
 
     elif ShSmax_id == 1: # So a larger S_h/S ratio for stability:
-        id_ShS_C = np.where(np.abs(cntr - ShS_S_xfw) == np.min(np.abs(cntr - ShS_S_xfw)))[0][0]
+        id_ShS_C = np.where(np.abs(cntr - ShS_S_xaft) == np.min(np.abs(cntr - ShS_S_xaft)))[0][0]
         x_C = xcgBAR[id_ShS_C]
         xi = x_C
         if x_C > xcg_fwBAR:
             if not IgnoreErrors:
-                raise ValueError('No solutions in this configuration, aft x_cgBAR is outside of controllability region')
+                raise ValueError(f'No solutions in this configuration, fwd x_cgBAR is outside of controllability region (fwd xcg_BAR={xcg_fwBAR}, x_C={x_C})')
         
         deltaxcg = x_C - xcg_fwBAR
     
@@ -146,8 +146,17 @@ def scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xac,Clah,ClaAh,deda,SM,xcg_fwBAR,xcg_aftB
     return {'ShS': [ShS_C_xfw,ShS_S_xaft][ShSmax_id],
             'xcg_waste': deltaxcg}
 
-# d = - 0.1151451514515145/4 - 0.02588425884258838/4 - 0.005814058140581391/4 - 0.0013040130401303918/4
-d = 0
-k = scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xacbar+d,Clah,ClaAh,deda,SM,xcg_fwBAR,xcg_aftBAR,IgnoreErrors=True)
-print(k)
-print(d)
+if __name__ == '__main__':
+    print(scissorplot(CLh,CLAh,lh+0.009,c,VhV,Cmac,xacbar,CLah,CLaAh,deda,SM,xcg_fwBAR,xcg_aftBAR))
+
+    # n_it = 1000
+    # d = 0
+    # for i in range(n_it):
+    #     try:
+    #         res = scissorplot(CLh,CLAh,lh+d*c,c,VhV,Cmac,xacbar,CLah,CLaAh,deda,SM,xcg_fwBAR+d,xcg_aftBAR+d,PLOT=False)
+    #         d += res['xcg_waste'] / 4
+    #     except:
+    #         d -= res['xcg_waste'] / 8
+    # scissorplot(CLh,CLAh,lh+d*c,c,VhV,Cmac,xacbar,CLah,CLaAh,deda,SM,xcg_fwBAR+d,xcg_aftBAR+d)
+    # print(res)
+    # print(d)

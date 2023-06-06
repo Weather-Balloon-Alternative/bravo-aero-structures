@@ -62,15 +62,19 @@ def masscalc(b,c,density,A_c):
     m = A_c*c*b*density
     return m 
 
-b = 1.023609984
-# S = 0.0876
-c = 0.087924113
-A_c = 0.07995 # For NACA0012
-rho = 75
+if __name__ == '__main__':
+    b = 1.023609984
+    # S = 0.0876
+    c = 0.087924113
+    # S = 0.336
+    # b = 2.246
+    # c = S/b
+    A_c = 0.07995 # For NACA0012
+    rho = 75
 
-tailpar = tailsizing(b,c)
-print(tailpar)
-mhor = masscalc(tailpar['b_h'],tailpar['c_h'],rho,A_c)
-mver = masscalc(tailpar['b_v'],tailpar['c_v'],rho,A_c)
-print(mhor,mver)
-print(f'total mass: {(mhor+mver)*1000} g')
+    tailpar = tailsizing(b,c)
+    print(tailpar)
+    mhor = masscalc(tailpar['b_h'],tailpar['c_h'],rho,A_c)
+    mver = masscalc(tailpar['b_v'],tailpar['c_v'],rho,A_c)
+    print(mhor,mver)
+    print(f'total mass: {(mhor+mver)*1000} g')

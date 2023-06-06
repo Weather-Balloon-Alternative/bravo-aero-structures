@@ -38,8 +38,3 @@ def loadaero(filepath):
         # create for every element a list with all column data in case the data itself is not equal to not a number.
         output[names[i]] = [obj for obj in data[i,:] if str(obj) != 'nan']
     return output
-
-
-if __name__ =="__main__":
-    k = loadaero('Aero_output/glider_v7.xlsx')
-    print(k)
