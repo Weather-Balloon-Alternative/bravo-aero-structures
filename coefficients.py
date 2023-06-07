@@ -8,20 +8,24 @@ coeff_notail = aeroloader.loadaero('Aero_output/glider_v7_wingonly.xlsx')
 
 # From requirements:
 SM = 0.05 # Stability margin
-h = 27000 # height
+h = 0 # height - at max velocity, h=29000m at min velocity h=1000m
 atmos = ambiance.Atmosphere(h)
 rho = atmos.density # density
 g0 = atmos.grav_accel # gravitational acceleration
-V0 = 150 # velocity TODO: get actual figure from flight planning
+V0 = 20 # velocity - Max velocity 150m/s Min velocity 34m/s
+theta = 0 # rad
+
+#Shift
+shift = 0
 
 # From statistics:
 Vh = 0.5    # Horizontal tail volume TODO: From Airplane Design (Sadraey)
-lhc = 4+0.008796802253736823     # Ratio of the tail length over the chord TODO: From Airplane Design
+lhc = 4+shift     # Ratio of the tail length over the chord TODO: From Airplane Design
 ShS=0.10
 
 # From Structures:
-deltaxcg = 0.1
-xcgbar = 0.25+0.008796802253736823  # location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
+deltaxcg = 0.05
+xcgbar = 0.25+shift # location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
 xcg_fwBAR = xcgbar-0.5*deltaxcg  # most forward location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
 xcg_aftBAR = xcgbar+0.5*deltaxcg  # most aft location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
 m = 19 / g0 # mass
@@ -45,14 +49,14 @@ CZadot = 0 #derivative of Cz w.r.t. alpha_dot*c/V0
 Cmadot = 0 #derivative of Cm w.r.t. alpha_dot*c/V0
 KY2 = 0 #square of the nondimensional radius of gyration about the Y-axis [=I_y/(m*b)]
 CXu = 0 #derivative of X w.r.t. u divided by 1/(0.5*rho*V*S)
-CXa = 0 #derivative of CX w.r.t. alpha
-CZ0 = 0 #CZ in CX w.r.t. qc/V0
+CXa = (coeff['CFx1'][-1] - coeff['CFx'][-1])*180/np.pi #derivative of CX w.r.t. alpha
+CZ0 = -m*g0*np.cos(theta)/(0.5*rho*V0**2*S) #CZ in steady flight
 CZu = 0 #derivative of Z w.r.t. u divided by 1/(0.5*rho*V*S)
-CZa = 0 #derivative of CZ w.r.t. alpha
-CX0 = 0 #CX in steady flight
+CZa = (coeff['CFz1'][-1] - coeff['CFz'][-1])*180/np.pi #derivative of CZ w.r.t. alpha
+CX0 = -m*g0*np.sin(theta)/(0.5*rho*V0**2*S) #CX in steady flight
 CZq = 0 #derivative of CZ w.r.t. qc/V0
-Cmu = 0 #derivative of M w.r.t. divided by 1/(0.5*rho*V*S)
-Cma = 0 #derivative of Cm w.r.t. alpha
+Cmu = 0 #derivative of M w.r.t. u divided by 1/(0.5*rho*V*S)
+Cma = (coeff['CMx1'][-1] - coeff['CMx'][-1])*180/np.pi #derivative of Cm w.r.t. alpha
 Cmq = 0 #derivative of Cm w.r.t. qc/V0
 CXde = 0 #derivative of CX w.r.t. delta_e
 CZde = 0 #derivative of CZ w.r.t. delta_e
@@ -60,31 +64,30 @@ Cmde = 0 #elevator efficiency, derivative of Cm w.r.t. delta_e
 
 ## Stability stuff for asymmetric
 CYbdot = 0 #derivative of CY w.r.t. beta_dot
-mub = 0 #relative density [=m/(rho*S*b)]
-b = 0 #wing span
+mub = m/(rho*S*b) #relative density [=m/(rho*S*b)]
 KX2 = 0 #square of the nondimensional radius of gyration about the X-axis [=I_x/(m*b)]
 KXZ = 0 #nondimensional product of inertia [=J_xz/(m*b)]
 KZ2 = 0 #square of the nondimensional radius of gyration about the Z-axis [=I_z/(m*b)]
-CYb = 0 #derivative of CY w.r.t. beta
+CYb = (coeff['CFy2'][-1] - coeff['CFy'][-1])*180/np.pi #derivative of CY w.r.t. beta
 CL = coeff['CL'][-1] #lift coefficient
 CYp = 0 #derivative of CY w.r.t. p*b/(2*V0)
 CYr = 0 #derivative of CY w.r.t. r*b/(2*V0)
-Clb = 0 #derivative of Cl w.r.t. beta
+Clb = (coeff['CMx2'][-1] - coeff['CMx'][-1])*180/np.pi #derivative of Cl w.r.t. beta
 Clp = 0 #derivative of Cl w.r.t. p*b/(2*V0)
 Clr = 0 #derivative of Cl w.r.t. r*b/(2*V0)
-Cnb = 0 #static directional stability, derivative of Cn w.r.t. beta
+Cnb = (coeff['CMz2'][-1] - coeff['CMz'][-1])*180/np.pi #static directional stability, derivative of Cn w.r.t. beta
 Cnp = 0 #derivative of Cn w.r.t. p*b/(2*V0)
 Cnr = 0 #derivative of Cn w.r.t. r*b/(2*V0)
 CYda = 0 #derivative of CY w.r.t. delta_a
-CYdr = 0 #derivative of CY w.r.t. delta_r
+CYdr = 0 #derivative of CY w.r.t. delta_r # No rudder, =0
 Clda = 0 #derivative of Cl w.r.t. delta_a
-Cldr = 0 #derivative of Cl w.r.t. delta_r
+Cldr = 0 #derivative of Cl w.r.t. delta_r # No rudder, =0
 Cnda = 0 #derivative of Cn w.r.t. delta_a
-Cndr = 0 #derivative of Cn w.r.t. delta_r
+Cndr = 0 #derivative of Cn w.r.t. delta_r # No rudder, =0
 
 ## Misc.
 deda = 1-0.725    # derivative of the downwash angle w.r.t. alpha TODO: Estimated from Sailplane Design (Thomas)
-VhV = 1     # ratio of the velocity at the tail over the aircraft velocity TODO: Guesstimate, just neglect for now
+VhV = 0.8     # ratio of the velocity at the tail over the aircraft velocity TODO: Guesstimate, just neglect for now
 CLAh = coeff_notail['CL'][-1]   # lift coefficient of the aircraft without the tail
 CLh = (CL-CLAh)/(VhV**2*ShS)    # lift coefficient of the tail
 CLa = (coeff['CL1'][-1] - CL)*180/np.pi # derivative of the lift coefficient of the aircraft

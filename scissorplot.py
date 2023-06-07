@@ -147,16 +147,17 @@ def scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xac,CLah,CLaAh,deda,SM,xcg_fwBAR,xcg_aftB
             'xcg_waste': deltaxcg}
 
 if __name__ == '__main__':
-    print(scissorplot(CLh,CLAh,lh+0.009,c,VhV,Cmac,xacbar,CLah,CLaAh,deda,SM,xcg_fwBAR,xcg_aftBAR))
+    # print(scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xacbar,CLah,CLaAh,deda,SM,xcg_fwBAR,xcg_aftBAR))
 
-    # n_it = 1000
-    # d = 0
-    # for i in range(n_it):
-    #     try:
-    #         res = scissorplot(CLh,CLAh,lh+d*c,c,VhV,Cmac,xacbar,CLah,CLaAh,deda,SM,xcg_fwBAR+d,xcg_aftBAR+d,PLOT=False)
-    #         d += res['xcg_waste'] / 4
-    #     except:
-    #         d -= res['xcg_waste'] / 8
-    # scissorplot(CLh,CLAh,lh+d*c,c,VhV,Cmac,xacbar,CLah,CLaAh,deda,SM,xcg_fwBAR+d,xcg_aftBAR+d)
-    # print(res)
-    # print(d)
+    n_it = 1000
+    d = 0
+    for i in range(n_it):
+        try:
+            Cmac = coeff['CMy'][-1] - CLAh*(xcgbar+d-xacbar)/c + (ShS*lhc*VhV**2)*CLh    # moment coefficient of the aerodynamic centre 
+            res = scissorplot(CLh,CLAh,lh+d*c,c,VhV,Cmac,xacbar,CLah,CLaAh,deda,SM,xcg_fwBAR+d,xcg_aftBAR+d,PLOT=False)
+            d += res['xcg_waste'] / 4
+        except:
+            d -= res['xcg_waste'] / 8
+    scissorplot(CLh,CLAh,lh+d*c,c,VhV,Cmac,xacbar,CLah,CLaAh,deda,SM,xcg_fwBAR+d,xcg_aftBAR+d)
+    print(res)
+    print(d)

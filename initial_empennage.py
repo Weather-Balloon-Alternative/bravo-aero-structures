@@ -1,5 +1,5 @@
 import numpy as np
-def tailsizing(b,c,ShS=0.15,Arh=4,lhc=4,Arv = 1.1):
+def tailsizing(b,c,ShS=0.10,Arh=4,lhc=4,Arv = 1.1):
     """Initial empennage sizing for a H-tail glider. 
     Initial area ratios and aspect ratios taken from 
     historical gliders and H-tail aircraft.
@@ -59,13 +59,13 @@ def masscalc(b,c,density,A_c):
     Returns:
         float: wing section mass
     """   
-    m = A_c*c*b*density
+    m = A_c*c**2*b*density
     return m 
 
 if __name__ == '__main__':
-    b = 1.023609984
+    b = 1.147606204
     # S = 0.0876
-    c = 0.087924113
+    c = 0.09291815
     # S = 0.336
     # b = 2.246
     # c = S/b
