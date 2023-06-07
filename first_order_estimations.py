@@ -1,5 +1,6 @@
 import ambiance
 import numpy as np
+import wing_geometry
 
 def V_ground(highest_altitude, lowest_altitude,max_mach_no):
     """
@@ -60,6 +61,11 @@ def wing_mass(b, S, taper_ratio, rho_material, fill_coefficient, thickness ):
     C_t = C_r*taper_ratio
     #calculate volume following this
     Volume = 2*((b/2)*((C_r+C_t)/2)*fill_coefficient)*thickness
+    
+    print(Volume, "sex")
+    print(wing_geometry.volume(C_r, taper_ratio, b), "sex2")
+    Volume = wing_geometry.volume(C_r, taper_ratio, b)
+
     #calculate mass of the material
     mass = Volume*rho_material
     return mass
