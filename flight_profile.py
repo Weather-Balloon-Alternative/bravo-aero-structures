@@ -9,7 +9,8 @@ def read_json(file_name):
 atmos_dict = read_json('atmospheric_characteristics.json')
 wind_dict = read_json('windprofiles_sonde_data.json')
 
-
+def m_ac(S, AR):
+    return np.sqrt(AR * S) / AR
 
 def Vgnd_over_sink(C_L, rho, V_wind, C_D0, AR, oss, mass, S, g):
     C_D = C_D0 + C_L ** 2 / (np.pi * AR * oss)
@@ -35,22 +36,23 @@ def Optimal_flight(C_L_lst, rho_h, windspeed_h, C_D0, AR, oss, mass, S, g, plot=
     L_over_D_opt = C_L_opt / (C_D0 + (C_L_opt ** 2) / (np.pi * AR * oss))
     V_TAS_opt = np.sqrt((mass * g) / S * 2 / rho_h * 1 / C_L_opt)
     return C_L_opt, L_over_D_opt, V_TAS_opt, Vgnd_over_sink_opt
-g = 9.81
-C_D0 = 0.035
-AR = 14
+g = 9.81 # m/s^2
+Raw_C_l_max = 1.5 # for 20-32C AIRFOIL (2032c-il)
+C_L_sf = 0.666
+C_L_max = C_L_sf * Raw_C_l_max
+C_D0 = 0.0336
+AR = 12
 oss = 0.9
-mass = 18.671 / g
-S = 0.0878
-mac = 0.077
-#Re_limit = 50_000
-#controlled_h = 27_000
+mass = .840 # kg
+S = 0.05 # m^2
+mac = m_ac(S, AR)
 windspeed_ssd = 2 # 0, 1, 2, 3 ssd
 C_L_lst = np.arange(0.01, 2, 0.01)
 dh = 10
 h_range = np.arange(30_000, 1_000, -dh)
 
 
-flight_dict = {"h": [], "C_L": [], "L_over_D": [], "V_T": [], "mach": [], "V_ground": [], "V_descent": [], "D_t": [], "distance_travelled": [], "reynolds_number": []}
+flight_dict = {"h": [], "C_L": [], "L_over_D": [], "V_T": [], "V_stall": [], "mach": [], "V_ground": [], "V_descent": [], "D_t": [], "distance_travelled": [], "reynolds_number": []}
 distance = 0
 Re_number = 0
 V_TAS = 0
@@ -64,6 +66,7 @@ for i_h, h in enumerate(h_range):
     a_h = atmos_dict[str(h)]["a"]
     C_L_opt, L_over_D_opt, V_TAS_opt, Vgnd_over_sink_opt = \
         Optimal_flight(C_L_lst, rho_h, windspeed_h, C_D0, AR, oss, mass, S, g, plot=True)
+    V_stall = np.sqrt((mass * g) / S * 2 / rho_h * 1 / C_L_max)
 
     if (V_TAS < V_TAS_opt) and (trigger is False):
         C_L = 0
@@ -71,6 +74,7 @@ for i_h, h in enumerate(h_range):
         L_over_D = 0
 
         V_TAS = np.sqrt(2 * g * (h_range[0] - h))
+
 
         V_ground = 0
 
@@ -88,8 +92,8 @@ for i_h, h in enumerate(h_range):
 
 
     else:
+
         trigger = True
-        print(h)
         C_L = C_L_opt
 
         L_over_D = L_over_D_opt
@@ -111,6 +115,7 @@ for i_h, h in enumerate(h_range):
     flight_dict["C_L"].append(C_L)
     flight_dict["L_over_D"].append(L_over_D)
     flight_dict["V_T"].append(V_TAS)
+    flight_dict["V_stall"].append(V_stall)
     flight_dict["mach"].append(V_TAS / a_h)
     flight_dict["V_ground"].append(V_ground)
     flight_dict["V_descent"].append(V_descent)
@@ -132,18 +137,19 @@ plt.xlabel("Lift Coefficient, C_L [-]")
 plt.ylabel("Ground Speed over Descent Speed, V_gnd/h_dot [-]")
 plt.show()
 
-plt.plot(flight_dict["L_over_D"], h_range)
+'''plt.plot(flight_dict["L_over_D"], h_range)
 plt.xlabel("Lift over Drag, L/D [-]")
 plt.ylabel("Altitude, h [m]")
-plt.show()
+plt.show()'''
 
 plt.plot(flight_dict["C_L"], h_range)
 plt.xlabel("Lift coefficient, C_L [-]")
 plt.ylabel("Altitude, h [m]")
 plt.show()
 
+plt.plot(flight_dict["V_stall"], h_range)
 plt.plot(flight_dict["V_T"], h_range)
-plt.xlabel("True Airspeed, V_TAS [m/s]")
+plt.xlabel("Stall speed, V_stall and True Airspeed, V_TAS [m/s]")
 plt.ylabel("Altitude, h [m]")
 plt.show()
 
@@ -152,15 +158,15 @@ plt.xlabel("Mach Number, M [-]")
 plt.ylabel("Altitude, h [m]")
 plt.show()
 
-plt.plot(flight_dict["V_ground"], h_range)
+'''plt.plot(flight_dict["V_ground"], h_range)
 plt.xlabel("Ground speed, V_ground [m/s]")
 plt.ylabel("Altitude, h [m]")
-plt.show()
+plt.show()'''
 
-plt.plot(flight_dict["V_descent"], h_range)
+'''plt.plot(flight_dict["V_descent"], h_range)
 plt.xlabel("Descent Speed, V_descent [m/s]")
 plt.ylabel("Altitude, h [m]")
-plt.show()
+plt.show()'''
 
 plt.plot(flight_dict["distance_travelled"], h_range)
 plt.xlabel("Distance, D [m]")
@@ -171,3 +177,8 @@ plt.plot(flight_dict["reynolds_number"], h_range)
 plt.xlabel("Reynolds Number, Re [...]")
 plt.ylabel("Altitude, h [m]")
 plt.show()
+
+
+
+
+
