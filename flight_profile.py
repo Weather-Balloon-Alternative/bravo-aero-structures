@@ -76,7 +76,10 @@ for i_h, h in enumerate(h_range):
 
         V_descent = V_TAS
 
-        D_t = dh / V_descent
+        if V_descent != 0:
+            D_t = dh / V_descent
+        else:
+            D_t = 0
 
         distance = 0
 
@@ -120,7 +123,7 @@ def write_JSON(dictionary, output_file):
         json.dump(dictionary, outfile)
 
 file_name = "flight_dict.json"
-#write_JSON(flight_dict, file_name)
+write_JSON(flight_dict, file_name)
 
 print(distance / 1000)
 print(sum(flight_dict['D_t']) / 3600)
