@@ -58,8 +58,8 @@ if __name__ == "__main__":
     safety_factor  = 1.4
     max_twist = 2 * np.pi/180 / safety_factor
     max_vert_def = 0.01 / safety_factor
-    CFRP_yield_stress = 110 * 10**9 / safety_factor
-    CFRP_shear_strength = 260 * 10**9 / safety_factor
+    CFRP_yield_stress = 110 * 10**6 / safety_factor
+    CFRP_shear_strength = 260 * 10**6 / safety_factor
     # aircraft geometry
     S = 0.05
     S_h = 0.0066762
@@ -95,13 +95,10 @@ if __name__ == "__main__":
 
     viable_options = np.where((twist_array <= max_twist) & (vert_def_array <= max_vert_def) & (bending_stress_array <= CFRP_yield_stress) & (shear_stress_array <= CFRP_shear_strength))
     MVoption_id = np.min(viable_options)
-    viableA = A_array[52:]
+    viableA = A_array[MVoption_id:]
     optimal_option_id = np.argmin(viableA)
-    optimal_option = design_options[optimal_option_id]
-    print(len(viable_options[0]))
-
-
-
+    optimal_option = design_options[(MVoption_id+optimal_option_id+1)]
+    
     print(optimal_option)
 
     mass_per_metre = optimal_option[A] * CFRP_density
@@ -110,4 +107,4 @@ if __name__ == "__main__":
     plt.plot(range(174),A_array[(231-174):])
     plt.plot(range(174),design_options[(231-174):,0])
     plt.plot(range(174),design_options[(231-174):,1])
-    plt.show()
+   # plt.show()
