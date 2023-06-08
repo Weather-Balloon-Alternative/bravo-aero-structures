@@ -3,8 +3,21 @@ import aeroloader
 import ambiance
 import numpy as np
 
+# Main inputs:
 coeff = aeroloader.loadaero('Aero_output/v10/gliderv10withtail.xlsx')
 coeff_notail = aeroloader.loadaero('Aero_output/v10/gliderv10notail.xlsx')
+Vh = 0.5    # Horizontal tail volume TODO: From Airplane Design (Sadraey)
+lhc = 4     # Ratio of the tail length over the chord TODO: From Airplane Design
+ShS = 0.10    # Ratio of the horizontal tail area over the main wing area
+shift = -0.064549722*0.09921688783735216/2 # CG shift
+incidence_h = -2*np.pi/180 # Tail incidence angle
+m = 0.92504571 # mass
+mainwingloc = 0.154 # Main wing location
+xcg = 0.192942294+shift # CG location
+xac_xroottip = 0.030930075 # AC location relative to the main wing root tip
+b = 0.774596669 # Span
+c = 0.064549722 # MAC
+
 
 # From requirements:
 SM = 0.05 # Stability margin
@@ -23,41 +36,19 @@ t_to_60deg_bank = 1.3 # Maximum time to achieve a 60 degree bank angle
 delta_a_max = 20*np.pi/180 # rad, maximum aileron deflection
 delta_e_max = 20*np.pi/180 # rad, maximum elevator deflection
 
-
-#Shift
-shift = 0
-
-# From statistics:
-Vh = 0.5    # Horizontal tail volume TODO: From Airplane Design (Sadraey)
-lhc = 4     # Ratio of the tail length over the chord TODO: From Airplane Design
-ShS=0.05
-
-# From OpenVSP:
-# mainwingloc = 0.154
-mainwingloc = 0.154
-xcg = 0.162942294
-xac_xroottip = 0.030930075
-# xac_xroottip = 0.0
-
-# Stuff
-incidence_h = -2*np.pi/180
-
 # From Aerodynamics:
 ## Geometry
-b = 0.774596669   # Span
-c = 0.064549722      # MAC
 AR = b/c     # Aspect ratio of the main wing TODO: Initial guess from Marten
 S = b**2/AR    # Wing surface 
 ARh = 3     # Aspect ratio of the horizontal tail TODO: Very much taken from the A-10, can change
-xacbar = (xac_xroottip)/c +0.03259401019870793  # location of the aerodynamic centre divided by the MAC TODO: From Marten
+xacbar = (xac_xroottip)/c  # location of the aerodynamic centre divided by the MAC TODO: From Marten
 lh = lhc*c  # Tail length TODO: Ideally this would be obtained from iteration
 
 # From Structures:
 deltaxcg = 0.1
-xcgbar = (xcg-mainwingloc)/c+shift # location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
+xcgbar = (xcg-mainwingloc)/c # location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
 xcg_fwBAR = xcgbar-0.5*deltaxcg  # most forward location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
 xcg_aftBAR = xcgbar+0.5*deltaxcg  # most aft location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
-m = 0.92504571 # mass
 Ix = 0 # MMOI around x-axis
 Iy = 0 # MMOI around y-axis
 Iz = 0 # MMOI around z-axis
@@ -69,15 +60,15 @@ CZadot = 0 #derivative of Cz w.r.t. alpha_dot*c/V0
 Cmadot = 0 #derivative of Cm w.r.t. alpha_dot*c/V0
 KY2 = 0 #square of the nondimensional radius of gyration about the Y-axis [=I_y/(m*b)]
 CXu = 0 #derivative of X w.r.t. u divided by 1/(0.5*rho*V*S)
-CXa = (coeff['CFx1'][-1] - coeff['CFx'][-1])*180/np.pi #derivative of CX w.r.t. alpha
+CXa = -(coeff['CFx1'][-1] - coeff['CFx'][-1])*180/np.pi #derivative of CX w.r.t. alpha
 CXq = 0 #derivative of CX w.r.t. qc/V0
 CZ0 = -m*g0*np.cos(theta)/(0.5*rho*V0**2*S) #CZ in steady flight
 CZu = 0 #derivative of Z w.r.t. u divided by 1/(0.5*rho*V*S)
-CZa = (coeff['CFz1'][-1] - coeff['CFz'][-1])*180/np.pi #derivative of CZ w.r.t. alpha
+CZa = -(coeff['CFz1'][-1] - coeff['CFz'][-1])*180/np.pi #derivative of CZ w.r.t. alpha
 CX0 = -m*g0*np.sin(theta)/(0.5*rho*V0**2*S) #CX in steady flight
 CZq = 0 #derivative of CZ w.r.t. qc/V0
 Cmu = 0 #derivative of M w.r.t. u divided by 1/(0.5*rho*V*S)
-Cma = (coeff['CMx1'][-1] - coeff['CMx'][-1])*180/np.pi #derivative of Cm w.r.t. alpha
+Cma = (coeff['CMy1'][-1] - coeff['CMy'][-1])*180/np.pi #derivative of Cm w.r.t. alpha
 Cmq = 0 #derivative of Cm w.r.t. qc/V0
 CXde = 0 #derivative of CX w.r.t. delta_e
 CZde = 0 #derivative of CZ w.r.t. delta_e
@@ -93,10 +84,10 @@ CYb = (coeff['CFy2'][-1] - coeff['CFy'][-1])*180/np.pi #derivative of CY w.r.t. 
 CL = coeff['CL'][-1] #lift coefficient
 CYp = 0 #derivative of CY w.r.t. p*b/(2*V0)
 CYr = 0 #derivative of CY w.r.t. r*b/(2*V0)
-Clb = (coeff['CMx2'][-1] - coeff['CMx'][-1])*180/np.pi #derivative of Cl w.r.t. beta
+Clb = -(coeff['CMx2'][-1] - coeff['CMx'][-1])*180/np.pi #derivative of Cl w.r.t. beta
 Clp = 0 #derivative of Cl w.r.t. p*b/(2*V0)
 Clr = 0 #derivative of Cl w.r.t. r*b/(2*V0)
-Cnb = (coeff['CMz2'][-1] - coeff['CMz'][-1])*180/np.pi #static directional stability, derivative of Cn w.r.t. beta
+Cnb = -(coeff['CMz2'][-1] - coeff['CMz'][-1])*180/np.pi #static directional stability, derivative of Cn w.r.t. beta
 Cnp = 0 #derivative of Cn w.r.t. p*b/(2*V0)
 Cnr = 0 #derivative of Cn w.r.t. r*b/(2*V0)
 CYda = 0 #derivative of CY w.r.t. delta_a
@@ -108,15 +99,13 @@ Cndr = 0 #derivative of Cn w.r.t. delta_r # No rudder, =0
 
 ## Misc.
 deda = 1-0.725    # derivative of the downwash angle w.r.t. alpha TODO: Estimated from Sailplane Design (Thomas)
-VhV = 0.8     # ratio of the velocity at the tail over the aircraft velocity TODO: Guesstimate, just neglect for now
+VhV = 0.95     # ratio of the velocity at the tail over the aircraft velocity TODO: Guesstimate, just neglect for now
 CLAh = coeff_notail['CL'][-1]   # lift coefficient of the aircraft without the tail
-# CLh = (CL-CLAh)/(VhV**2*ShS)    # lift coefficient of the tail
 CLa = (coeff['CL1'][-1] - CL)*180/np.pi # derivative of the lift coefficient of the aircraft
-CLaAh = (coeff_notail['CL1'][-1] - CL)*180/np.pi   # derivative of the lift coefficient of the aircraft without the tail w.r.t alpha 
-# CLah = (CLa - CLaAh) / (VhV**2*ShS*(1-deda))    # derivative of the lift coefficient of the tail w.r.t. alpha 
+CLaAh = (coeff_notail['CL1'][-1] - CLAh)*180/np.pi   # derivative of the lift coefficient of the aircraft without the tail w.r.t alpha 
 CLah = 2 * np.pi * ARh / (ARh + 2)    # derivative of the lift coefficient of the tail w.r.t. alpha 
 CLh = (CL-CLAh)/(VhV**2*ShS) + CLah*incidence_h    # lift coefficient of the tail
-Cmac = coeff['CMy'][-1] - CLAh*(xcgbar-xacbar)/c + (ShS*lhc*VhV**2)*CLh    # moment coefficient of the aerodynamic centre 
+Cmac = coeff['CMy'][-1] - CLAh*(xcgbar-xacbar) + (ShS*lhc*VhV**2)*CLh    # moment coefficient of the aerodynamic centre 
 
 # ###### TEST DATA #####
 # Vh = 0.41339
