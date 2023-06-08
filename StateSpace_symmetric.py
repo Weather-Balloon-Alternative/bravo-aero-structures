@@ -3,7 +3,7 @@ import scipy.linalg as la
 import control
 # from coefficients import *
 
-def ss_sym(muc,c,V0,CZadot,Cmadot,KY2,CXu,CXa,CZ0,CXq,CZu,CZa,CX0,CZq,Cmu,Cma,Cmq,CXde,CZde,Cmde):
+def ss_symEOM(muc,c,V0,CZadot,Cmadot,KY2,CXu,CXa,CZ0,CXq,CZu,CZa,CX0,CZq,Cmu,Cma,Cmq,CXde,CZde,Cmde):
     """Generates the state-space form of the symmetric equations of motion. Outputs a state-space from the Python control library.
 
     Args:
@@ -16,6 +16,7 @@ def ss_sym(muc,c,V0,CZadot,Cmadot,KY2,CXu,CXa,CZ0,CXq,CZu,CZa,CX0,CZq,Cmu,Cma,Cm
         CXu (float): derivative of X w.r.t. u divided by 1/(0.5*rho*V*S)
         CXa (float): derivative of CX w.r.t. alpha
         CZ0 (float): CZ in CX w.r.t. qc/V0
+        CXq (float): derivative of CX w.r.t. qc/V0
         CZu (float): derivative of Z w.r.t. u divided by 1/(0.5*rho*V*S)
         CZa (float): derivative of CZ w.r.t. alpha
         CX0 (float): CX in steady flight

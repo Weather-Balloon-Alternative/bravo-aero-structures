@@ -50,7 +50,7 @@ def stability(CLah,CLaAh,deda,lh,c,VhV,xcg,xac,SM):
     ShS = (xcg - xac + SM) / (CLah/CLaAh * (1-deda) * lh/c * (VhV)**2)
     return ShS
 
-def scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xac,CLah,CLaAh,deda,SM,xcg_fwBAR,xcg_aftBAR,PLOT=True,resolution=10**5,IgnoreErrors=False):
+def scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xacbar,CLah,CLaAh,deda,SM,xcg_fwBAR,xcg_aftBAR,PLOT=True,resolution=10**5,IgnoreErrors=False):
     """
     Calculates the optimum ratio of tail area 
     over wing area for a given aerodynamic 
@@ -63,7 +63,7 @@ def scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xac,CLah,CLaAh,deda,SM,xcg_fwBAR,xcg_aftB
         c (float): chord
         VhV (float): ratio of the velocity at the tail over the aircraft velocity
         Cmac (float): moment coefficient of the aerodynamic centre
-        xac (float): location of the aerodynamic centre divided by the chord
+        xacbar (float): location of the aerodynamic centre divided by the chord
         CLah (float): derivative of the lift coefficient of the tail w.r.t. alpha
         CLaAh (float): derivative of lift coefficient of the aircraft without the tail w.r.t alpha
         deda (float): derivative of the downwash angle w.r.t. alpha
@@ -89,8 +89,8 @@ def scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xac,CLah,CLaAh,deda,SM,xcg_fwBAR,xcg_aftB
     xcgBAR = np.linspace(0,1,resolution)
     id_xfw = np.where(np.abs(xcgBAR - xcg_fwBAR) == np.min(np.abs(xcgBAR - xcg_fwBAR)))[0][0]
     id_xaft = np.where(np.abs(xcgBAR - xcg_aftBAR) == np.min(np.abs(xcgBAR - xcg_aftBAR)))[0][0]
-    cntr = controllability(CLh,CLAh,lh,c,VhV,xcgBAR,Cmac,xac)
-    stab = stability(CLah,CLaAh,deda,lh,c,VhV,xcgBAR,xac,SM)
+    cntr = controllability(CLh,CLAh,lh,c,VhV,xcgBAR,Cmac,xacbar)
+    stab = stability(CLah,CLaAh,deda,lh,c,VhV,xcgBAR,xacbar,SM)
     
     if np.all(cntr - stab > 0): 
         if not IgnoreErrors:
@@ -146,18 +146,23 @@ def scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xac,CLah,CLaAh,deda,SM,xcg_fwBAR,xcg_aftB
     return {'ShS': [ShS_C_xfw,ShS_S_xaft][ShSmax_id],
             'xcg_waste': deltaxcg}
 
-if __name__ == '__main__':
-    # print(scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xacbar,CLah,CLaAh,deda,SM,xcg_fwBAR,xcg_aftBAR))
 
-    n_it = 1000
-    d = 0
-    for i in range(n_it):
-        try:
-            Cmac = coeff['CMy'][-1] - CLAh*(xcgbar+d-xacbar)/c + (ShS*lhc*VhV**2)*CLh    # moment coefficient of the aerodynamic centre 
-            res = scissorplot(CLh,CLAh,lh+d*c,c,VhV,Cmac,xacbar,CLah,CLaAh,deda,SM,xcg_fwBAR+d,xcg_aftBAR+d,PLOT=False)
-            d += res['xcg_waste'] / 4
-        except:
-            d -= res['xcg_waste'] / 8
-    scissorplot(CLh,CLAh,lh+d*c,c,VhV,Cmac,xacbar,CLah,CLaAh,deda,SM,xcg_fwBAR+d,xcg_aftBAR+d)
-    print(res)
-    print(d)
+
+if __name__ == '__main__':
+
+    print(scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xacbar,CLah,CLaAh,deda,SM,xcg_fwBAR,xcg_aftBAR))
+
+    # n_it = 1000
+    # d = 0
+    # for i in range(n_it):
+    #     try:
+    #         Cmac = coeff['CMy'][-1] - CLAh*(xcgbar-xacbar-d)/c + (ShS*lhc*VhV**2)*CLh    # moment coefficient of the aerodynamic centre 
+    #         CLh = (CL-CLAh)/(VhV**2*ShS)    # lift coefficient of the tail
+    #         res = scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xacbar+d,CLah,CLaAh,deda,SM,xcg_fwBAR,xcg_aftBAR,PLOT=False)
+    #         d -= res['xcg_waste'] / 4
+    #     except:
+    #         d += res['xcg_waste'] / 2
+
+    # scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xacbar+d,CLah,CLaAh,deda,SM,xcg_fwBAR,xcg_aftBAR)
+    # print(res)
+    # print(d)
