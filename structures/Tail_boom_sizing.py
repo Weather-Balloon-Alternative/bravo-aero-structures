@@ -98,7 +98,7 @@ if __name__ == "__main__":
     viableA = A_array[MVoption_id:]
     optimal_option_id = np.argmin(viableA)
     optimal_option = design_options[(MVoption_id+optimal_option_id+1)]
-    
+
     print(optimal_option)
 
     mass_per_metre = optimal_option[A] * CFRP_density
