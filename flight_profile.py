@@ -37,7 +37,7 @@ def Optimal_flight(C_L_lst, rho_h, windspeed_h, C_D0, AR, oss, mass, S, g, plot=
     V_TAS_opt = np.sqrt((mass * g) / S * 2 / rho_h * 1 / C_L_opt)
     return C_L_opt, L_over_D_opt, V_TAS_opt, Vgnd_over_sink_opt
 g = 9.81 # m/s^2
-Raw_C_l_max = 1.5 # for 20-32C AIRFOIL (2032c-il)
+Raw_C_l_max = 1.4 # for 20-32C AIRFOIL (2032c-il)
 C_L_sf = 0.666
 C_L_max = C_L_sf * Raw_C_l_max
 C_D0 = 0.0336
@@ -48,7 +48,7 @@ S = 0.05 # m^2
 mac = m_ac(S, AR)
 windspeed_ssd = 2 # 0, 1, 2, 3 ssd
 C_L_lst = np.arange(0.01, 2, 0.01)
-dh = 10
+dh = 1000
 h_range = np.arange(30_000, 1_000, -dh)
 
 
@@ -132,6 +132,7 @@ write_JSON(flight_dict, file_name)
 
 print(distance / 1000)
 print(sum(flight_dict['D_t']) / 3600)
+print(atmos_dict['29000'])
 
 plt.xlabel("Lift Coefficient, C_L [-]")
 plt.ylabel("Ground Speed over Descent Speed, V_gnd/h_dot [-]")
