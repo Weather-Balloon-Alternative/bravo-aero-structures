@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 # compute bending moment
 def bending_moment(n,W,S_h,S,l_tail):
-    M_x = n * W * S_h/S * l_tail
+    M_x = (n-1) * W * S_h/S * l_tail
     return M_x
 
 # compute  shear
@@ -11,7 +11,7 @@ def shear(n,W,b,S_h,S):
     V_y = (n-1-n*S_h/S)*W
     L_centre = b/6
     L_centre_tail = b_h/6
-    T_z = n*W*L_centre + n*W*L_centre_tail*S_h/S
+    T_z = (n-1)*W*L_centre + (n-1)*W*L_centre_tail*S_h/S
     return V_y, T_z
 
 # Compute and optimize for stresses in a tube cross-section
@@ -54,8 +54,8 @@ if __name__ == "__main__":
     # load case
     n = 2.5
     W = 0.79948938*9.81
-    # maximum deformatations and stresses
-    safety_factor  = 1.4
+    # maximum deformations and stresses
+    safety_factor  = 1.5
     max_twist = 2 * np.pi/180 / safety_factor
     max_vert_def = 0.01 / safety_factor
     CFRP_yield_stress = 110 * 10**6 / safety_factor
@@ -104,7 +104,3 @@ if __name__ == "__main__":
     mass_per_metre = optimal_option[A] * CFRP_density
     print(mass_per_metre)
 
-    plt.plot(range(174),A_array[(231-174):])
-    plt.plot(range(174),design_options[(231-174):,0])
-    plt.plot(range(174),design_options[(231-174):,1])
-   # plt.show()
