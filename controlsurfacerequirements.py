@@ -12,7 +12,7 @@ def pitchraterequirements(V0,h,nmax,radians=True):
         radians (bool, optional): whether to return in rad/s. Defaults to True.
 
     Returns:
-        _type_: _description_
+        ang_acc: required angular acceleration
     """    
     atmos = ambiance.Atmosphere(h)
     g0 = atmos.grav_accel

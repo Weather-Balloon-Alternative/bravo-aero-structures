@@ -39,9 +39,9 @@ def ss_asymmetricEOM(CYbdot,mub,b,V0,KX2,KXZ,KZ2,CYb,CL,CYp,CYr,Clb,Clp,Clr,Cnb,
     P = np.mat([[(CYbdot-2*mub)*b/V0,   0,          0,                              0                               ],
                 [0,                     -b/(2*V0),  0,                              0                               ],
                 [0,                     0,          -4*mub*KX2*0.5*(b/V0)**2,       4*mub*KXZ*0.5*(b/V0)**2         ],
-                [0,                     0,          4*mub[id]*KXZ*0.5*(b/V0)**2,    -4*mub[id]*KZ2*0.5*(b/V0)**2    ]])
+                [0,                     0,          4*mub*KXZ*0.5*(b/V0)**2,    -4*mub*KZ2*0.5*(b/V0)**2    ]])
     
-    Q = np.mat([[-1*CYb,                -1*CL[id],  -1*CYp*b/(2*V0),                -(CYr-4*mub)*b/(2*V0)           ],
+    Q = np.mat([[-1*CYb,                -1*CL,  -1*CYp*b/(2*V0),                -(CYr-4*mub)*b/(2*V0)           ],
                 [0,                     0,          -1*(b/(2*V0)),                  0                               ],
                 [-1*Clb,                0,          -1*Clp*0.5*(b/V0),              -1*Clr*0.5*(b/V0)               ],
                 [-1*Cnb,                0,          -1*Cnp*0.5*b/V0,                -1*Cnr*0.5*b/V0                 ]])
