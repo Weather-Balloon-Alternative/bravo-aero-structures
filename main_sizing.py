@@ -87,6 +87,7 @@ def main_sizingcheck(radians=True,print_intermediate=True):
 
     # Calculate pitch and bank performance
     # Pitch
+    
     pitchratereq = pitchraterequirements(V0,h,nmax)
     tmeasure = 1
     xpitch = control.forced_response(ss_sym,T=np.linspace(0,tmeasure,1000),U=np.ones(1000)*delta_e_max)[2]
@@ -101,7 +102,12 @@ def main_sizingcheck(radians=True,print_intermediate=True):
         print(f'Pitch and bank performance results:\n\
     Sufficient pitch performance: {pitchreqmet}\n\
     Sufficient bank performance: {bankreqmet}\n')
-        print('Sizing control surfaces...')
+    
+    return pitchreqmet,bankreqmet
 
 if __name__ == '__main__':
+    CXde = 0 #derivative of CX w.r.t. delta_e # Commonly neglected, =0
+    CNde = 0 #derivative of N w.r.t. delta_e, basically what force the elevator needs to generate
+    CZde = -CNde*VhV**2*ShS #derivative of CZ w.r.t. delta_e
+    Cmde = 0 #elevator efficiency, derivative of Cm w.r.t. delta_e
     main_sizingcheck()

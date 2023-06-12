@@ -61,6 +61,7 @@ def eigenvalues_dutchroll(mub,KZ2,Cnr,Cnb,CYb,V0,b):
 def eigenvalues_spiral(CL,Clb,Cnr,Cnb,Clr,Clp,CYb,mub,Cnp,V0,b):
     num = 2*CL*(Clb*Cnr-Cnb*Clr)
     den = Clp*(CYb+4*mub*Cnb)-Cnp*(CYb*Clr+4*mub*Clb)
+    print(num,den)
     eigenvals = np.array((num/den))
     return eigenvals*V0/b
 

@@ -12,10 +12,17 @@ def loadaero(filepath):
     #read the file to numpy
     df = pd.read_excel(filepath)
     data = df.to_numpy()
+
+    #Discard all data until VSPAERO_Stab
+    iddiscard = np.where(data == 'VSPAERO_Stab')[0][0]
+    data = data[iddiscard::]
+    
+
     
     #get a list of all names that are mentioned in the excel file
     namesraw = data[:,0]
     names = np.array(namesraw)
+
     
     #ensure that all elements in the dictionary will get a unique name
     for name in names:
