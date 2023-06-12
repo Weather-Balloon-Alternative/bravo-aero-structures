@@ -17,13 +17,13 @@ def shear(n,W,b,S_h,S):
 # Compute and optimize for stresses in a tube cross-section
 def tube_stresses(M_x, V_y, T_z):
     # Initialize radius and thickness options
-    r_range = np.linspace(r_min, r_max, int(r_max/r_step + 1))
+    r_range = np.linspace(r_min, r_max, int(r_max/r_step - 1))
     design_options = [0., 0., 0., 0., 0.,0.,0.,0.]
 
     for id in range(len(r_range)):
         r = r_range[id]
-        r_array = np.ones((id+1))*r
-        t_range = np.linspace(t_min, r, (id+1))
+        r_array = np.ones((id+2))*r
+        t_range = np.linspace(t_min, r, (id+2))
 
         # Section properties
         I_xx = (np.pi * r_array**4) / 4 - (np.pi * (r_array - t_range)**4) / 4
@@ -53,7 +53,7 @@ def tube_stresses(M_x, V_y, T_z):
 if __name__ == "__main__":
     # load case
     n = 2.5
-    W = 0.79948938*9.81
+    W = 0.773736504*9.81
     # maximum deformations and stresses
     safety_factor  = 1.5
     max_twist = 2 * np.pi/180 / safety_factor
@@ -62,10 +62,10 @@ if __name__ == "__main__":
     CFRP_shear_strength = 260 * 10**6 / safety_factor
     # aircraft geometry
     S = 0.05
-    S_h = 0.0066762
+    S_h = 0.005960478
     b = 0.774596669/2
-    b_h =  0.141522441/2
-    l_tail = 0.413262035
+    b_h =  0.133721484/2
+    l_tail = 0.368958279
     # numerical parameters
     r_min = 0.001
     r_max = 0.01
@@ -74,8 +74,8 @@ if __name__ == "__main__":
     t_max = 0.01
     t_step = 0.0005
     # material properties
-    G = 30 * 10**9
-    E = 17 * 10**9
+    G = 33 * 10**9
+    E = 150 * 10**9
     CFRP_density = 2000 # kg/m^3
 
     #output
@@ -98,9 +98,8 @@ if __name__ == "__main__":
     viableA = A_array[MVoption_id:]
     optimal_option_id = np.argmin(viableA)
     optimal_option = design_options[(MVoption_id+optimal_option_id+1)]
-
-    print(optimal_option)
-
     mass_per_metre = optimal_option[A] * CFRP_density
-    print(mass_per_metre)
+
+    # print output
+    print('Outer radius = ' + str(optimal_option[0]) + ' m \n' + 'Thickness = '+ str(optimal_option[1]) + ' m \n' + 'Cross-sectional area = ' + str(optimal_option[2]) + ' mm^2 \n' + 'twist angle = ' + str(optimal_option[3]) + ' radians \n' + 'Vertical deformation = ' + str(optimal_option[4]) + ' m \n' + 'Bending stress = ' + str(optimal_option[5]) + ' Pa \n' + 'Shear stress = ' + str(optimal_option[6]) + ' Pa \n' + 'Mass per metre = ' + str(optimal_option[7]) + ' kg/m \n')
 
