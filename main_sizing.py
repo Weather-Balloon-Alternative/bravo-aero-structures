@@ -90,12 +90,12 @@ def main_sizingcheck(radians=True,print_intermediate=True):
     
     pitchratereq = pitchraterequirements(V0,h,nmax)
     tmeasure = 1
-    xpitch = control.forced_response(ss_sym,T=np.linspace(0,tmeasure,1000),U=np.ones(1000)*delta_e_max)[2]
-    pitchreqmet = xpitch[2][-1]/tmeasure > pitchratereq['ang_acc']
+    tpitch,xpitch = control.forced_response(ss_sym,T=np.linspace(0,tmeasure,1000),U=np.ones(1000)*delta_e_max)
+    pitchreqmet = xpitch[2][-1]/tmeasure > pitchratereq['ang_acc'][0]
 
     # Bank
     bankmaneuver = np.vstack((np.ones(1000)*delta_a_max,np.zeros(1000)))
-    xbank = control.forced_response(ss_asym,T=np.linspace(0,t_to_60deg_bank,1000),U=bankmaneuver)[2]
+    tbank,xbank = control.forced_response(ss_asym,T=np.linspace(0,t_to_60deg_bank,1000),U=bankmaneuver)
     bankreqmet = xbank[1][-1] > 60*np.pi/180
 
     if print_intermediate:
@@ -106,8 +106,28 @@ def main_sizingcheck(radians=True,print_intermediate=True):
     return pitchreqmet,bankreqmet
 
 if __name__ == '__main__':
-    CXde = 0 #derivative of CX w.r.t. delta_e # Commonly neglected, =0
-    CNde = 0 #derivative of N w.r.t. delta_e, basically what force the elevator needs to generate
-    CZde = -CNde*VhV**2*ShS #derivative of CZ w.r.t. delta_e
-    Cmde = 0 #elevator efficiency, derivative of Cm w.r.t. delta_e
     main_sizingcheck()
+
+    # Obtain_ControlSurfaceSizing = True
+    # if Obtain_ControlSurfaceSizing:
+    #     resolution = 10E-3
+    #     CZde_opt = np.arange(-2,0,resolution)
+    #     CZde_best = np.nan
+
+    #     Clda_opt = np.arange(-2,0,resolution)
+    #     Clda_best = np.nan
+
+    #     for opt in range(len(CZde_opt)):
+    #         CZde = CZde_opt[opt]
+    #         Cmde = CZde*lhc #elevator efficiency, derivative of Cm w.r.t. delta_e
+    #         Clda = Clda_opt[opt]
+    #         pitchreqmet,bankreqmet = main_sizingcheck(print_intermediate=False)
+    #         if pitchreqmet:
+    #             CZde_best = CZde
+
+    #         if bankreqmet:
+    #             Clda_best = Clda
+
+    #     print(f'Best CZde = {CZde_best}1/rad = {CZde_best*np.pi/180}1/deg')
+    #     print(f'Best Clda = {Clda_best}1/rad = {Clda_best*np.pi/180}1/deg')
+
