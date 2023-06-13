@@ -1,6 +1,44 @@
 import numpy as np
 import scipy.optimize as spo
 
+
+class wing_structure():
+	def __init__(self, planform, section, section_thickness):
+		self.planform = planform
+		self.section = section
+		self.section_thickness = section_thickness
+		self.root_section = self.get_section_at_span(0)
+		self.tip_section = self.get_section_at_span(planform['span']*0.5)
+
+	def get_section_at_span(self, Y):
+		#This function would need to be changed if the more generic coimposite_section class is to be used
+		self.section.ao = (self.planform["c_root"] - Y*((self.planform["c_root"]-self.planform["c_tip"])/(self.planform["span"]*0.5)))*0.5
+		self.section.bo = self.section.ao*self.planform["tc"]
+		self.section.set_inner_t(self.section_thickness(Y))
+		return self.section
+
+	def get_sectional_properties_distr(self, YY):
+		II_xx = II_yy = np.zeros(YY.shape)
+		JJ = np.zeros(YY.shape)
+		for idx, Y in enumerate(YY):
+			cur_section = self.get_section_at_span(Y)
+			II_xx[idx], II_yy = cur_section.get_I()
+			JJ[idx] = cur_section.get_J()
+		self.II_xx, self.II_yy, self.JJ = II_xx, II_yy, JJ
+		return II_xx, II_yy, JJ
+
+	def get_max_stress_curve(self, YY, M):
+		stress_curve = np.zeros(YY.shape)
+		for idx, Y in enumerate(YY):
+			cur_section = self.get_section_at_span(Y)
+			stress_curve[idx] = cur_section.get_max_stress(M[idx])
+		self.stress_curve = stress_curve
+		return stress_curve
+
+
+
+
+
 class composite_section():
 	'''class that represents a complete wing section, built up of individual sections defined below'''
 	def __init__(self, sections):
@@ -41,7 +79,7 @@ class ellipse():
 		#geom=(a_inner, b_inner, a_outer, b_outer), #mat_prop =(E, sigma_yield)
 		self.ai, self.bi, self.ao, self.bo = geom
 		self.offset = np.array(offset)
-		self.E, self.G, self.sigma_y = mat_prop
+		self.E, self.G, self.sigma_y = mat_prop['E'], mat_prop['G'], mat_prop['sigma_y']
 
 
 		self.get_area()
@@ -71,9 +109,11 @@ class ellipse():
 		self.J = 0.25*np.pi*(self.ao*self.bo*(self.ao**2+self.bo**2) - self.ai*self.bi*(self.ai**2+self.bi**2))
 		return self.J
 
-	def get_max_stress(self, loads): 
+	def get_max_stress(self, moments, forces=(0,0,0)):
+		#forces: Fx, Fy, Fz
+		#moments: Mx, My, Tz (SA coordinate system) 
 		#this would need to be changed if composite beams are implemented
-		stress = lambda x, y: (loads['M_x']*y)/self.I_xx + (loads['M_y']*x)/self.I_yy
+		stress = lambda x, y: (moments[0]*y)/self.I_xx + (moments[1]*x)/self.I_yy
 		y_ellipse = lambda x: self.bo*np.sqrt(1-(x**2/self.ao**2))
 
 		q1 = spo.minimize(lambda x: -np.abs(stress(x,y_ellipse(x))), 0, bounds=spo.Bounds(0, self.ao))
@@ -112,9 +152,8 @@ class rectangle():
 	def __init(self, geom, offset, mat_prop):
 		self.bi, self.hi, self.bo, self.ho = geom
 		self.offset = np.array(offset)
-		self.E = mat_prop[0]
-		self.sigma_y = mat_prop[1]
-
+		self.E, self.G, self.sigma_y = mat_prop['E'], mat_prop['G'], mat_prop['sigma_y']
+		
 		self.area()
 		self.get_I()
 
