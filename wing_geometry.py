@@ -27,5 +27,7 @@ def volume(cr, taper_rat, span, tc=0.12):
 	return V
 
 
+if __name__=="__main__":
+	print("bruh")
 
 

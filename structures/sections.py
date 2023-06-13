@@ -8,11 +8,11 @@ class wing_structure():
 		self.section = section
 		self.section_thickness = section_thickness
 		self.root_section = self.get_section_at_span(0)
-		self.tip_section = self.get_section_at_span(planform['span']*0.5)
+		self.tip_section = self.get_section_at_span(planform["b"]*0.5)
 
 	def get_section_at_span(self, Y):
 		#This function would need to be changed if the more generic coimposite_section class is to be used
-		self.section.ao = (self.planform["c_root"] - Y*((self.planform["c_root"]-self.planform["c_tip"])/(self.planform["span"]*0.5)))*0.5
+		self.section.ao = (self.planform["c_root"] - Y*((self.planform["c_root"]-self.planform["c_tip"])/(self.planform["b"]*0.5)))*0.5
 		self.section.bo = self.section.ao*self.planform["tc"]
 		self.section.set_inner_t(self.section_thickness(Y))
 		return self.section
@@ -68,7 +68,12 @@ class composite_section():
 		R_y /= M_y
 
 
-
+class thinwalled_airfoil():
+	def __init__(self, geom, offset, mat_prop):
+		self.chord, self.height, self.t = geom
+		self.offset = np.array(offset)
+		self.E, self.G, self.sigma_y = mat_prop['E'], mat_prop['G'], mat_prop['sigma_y']
+	
 
 
 
@@ -149,21 +154,26 @@ class circle(ellipse):
 		super().__init__(self, eq_ellipse_geom, offset, mat_prop)
 
 class rectangle():
-	def __init(self, geom, offset, mat_prop):
-		self.bi, self.hi, self.bo, self.ho = geom
+	def __init__(self, geom, offset, mat_prop):
+		self.bi, self.hi, self.bo, self.ho = geom # inner width, inner height, outer ...
 		self.offset = np.array(offset)
 		self.E, self.G, self.sigma_y = mat_prop['E'], mat_prop['G'], mat_prop['sigma_y']
 		
 		self.area()
 		self.get_I()
 
+	def set_inner_t(self, t):
+		self.bi = self.bo - t
+		self.hi = self.ho -t 
+
+
 	def area(self):
-		self.area =  bo*ho - bi*hi
+		self.area =  self.bo*self.ho - self.bi*self.hi
 		return self.area
 
 	def get_I(self):
-		self.I_xx = (1/12)*(self.bo*self.ho**3 - self.bi*self.hi**3) + A*offset[1]**2
-		self.I_yy = (1/12)*(self.ho*self.bo**3 - self.hi*self.bi**3) + A*offset[0]**2
+		self.I_xx = (1/12)*(self.bo*self.ho**3 - self.bi*self.hi**3) + self.area*self.offset[1]**2
+		self.I_yy = (1/12)*(self.ho*self.bo**3 - self.hi*self.bi**3) + self.area*self.offset[0]**2
 		return self.I_xx, self.I_yy
 	
 	#TODO: torsional properties, stress calculation

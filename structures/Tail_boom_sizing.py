@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import sections
+import beam
 
 # compute bending moment
 def bending_moment(n,W,S_h,S,l_tail):
@@ -8,7 +10,7 @@ def bending_moment(n,W,S_h,S,l_tail):
 
 # compute  shear
 def shear(n,W,b,S_h,S):
-    V_y = (n-1-n*S_h/S)*W
+    V_y = (n*S_h/S)*W
     L_centre = b/6
     L_centre_tail = b_h/6
     T_z = n*W*L_centre + n*W*L_centre_tail*S_h/S
@@ -48,6 +50,38 @@ def tube_stresses(M_x, V_y, T_z):
 
 
     return design_options[1:,:]
+
+
+def big_tailboom_sizing(W, n, l_tail, S_h, S, b):
+
+    h_r = 0.14
+    h_t = 0.028
+    h = lambda z: h_r - z*(h_r-h_t)/l_tail
+    ar_tailboom = 1
+    t = 0.0027/1000
+    mat_prop_skin = {"E":24.1e9, "G":10e9, "sigma_y":500e6}
+
+
+    zz = np.linspace(0, l_tail, 100)
+    II = np.zeros(zz.shape)
+    tailboom_section = sections.rectangle((h(0)*ar_tailboom - t, h(0) -t, h(0)*ar_tailboom, h(0)), (0,0), mat_prop_skin)
+    for idx, z in enumerate(zz):
+        tailboom_section.bo = h(z)*ar_tailboom
+        tailboom_section.ho = h(z)
+        tailboom_section.set_inner_t(t)
+
+        II[idx] = tailboom_section.get_I()[0]
+    print(II[0])
+    V_y = np.zeros(zz.shape)
+    V_y[-1] = -shear(n, W, b, S_h, S)[0]
+    defl = beam.deflection(zz, 0, V_y, 0, tailboom_section.E, II, plot=True)
+    print(defl[-1][-1])
+
+    stress_curve = (defl[1]*0.5*h(zz))/II
+    beam.plot_stress_curve(zz, defl[-1], stress_curve)
+    print(np.max(stress_curve)/1e6)
+
+
 
 
 if __name__ == "__main__":
@@ -108,3 +142,10 @@ if __name__ == "__main__":
     plt.plot(range(174),design_options[(231-174):,0])
     plt.plot(range(174),design_options[(231-174):,1])
    # plt.show()
+
+    W = 3.9*9.81
+    l_tail = 0.43
+    b = 1.60623784
+    S_h = 0.0215
+    S = 0.215
+    big_tailboom_sizing(W, n, l_tail, S_h, S, b)
