@@ -3,7 +3,7 @@ import json
 import os
 import math
 from flight_performance import FlightPerformance
-
+from matplotlib import pyplot as plt
 
 
 
@@ -108,7 +108,7 @@ def read_RS92(file_txt):
                     last_gps = [lat, lon]
     if len(wsp_lst) > 0:
         windprofile, max_alt = extrapolate(alt_lst, wsp_lst)
-        dst = gcdst(first_gps, last_gps)
+        dst = gcd(first_gps, last_gps)
         return windprofile, max_alt, dst, True
     else:
         return 0,0,0,False
@@ -135,19 +135,22 @@ def read_iMet(file_txt):
                     last_gps = [lat, lon]
     if len(wsp_lst) > 0:
         windprofile, max_alt = extrapolate(alt_lst, wsp_lst)
-        dst = gcdst(first_gps, last_gps)
+        dst = gcd(first_gps, last_gps)
         return windprofile, max_alt, dst, True
     else:
         return 0,0,0,False
 
-stations = ['boulder', 'macquarie', 'debilt', 'paramaribo', 'southpole']
-spiral_height = {'boulder':3000, 'macquarie': 1500, 'debilt':1500, 'paramaribo':1500, 'southpole':3500}
+stations = ['debilt', 'paramaribo', 'southpole', 'macquarie', 'boulder']
+spiral_height = {'boulder':3000, 'macquarie': 300, 'debilt':1500, 'paramaribo':1500, 'southpole':3500}
+station_name = {'boulder':'Boulder, US', 'macquarie': 'Macquarie, AU', 'debilt':'De Bilt, NL', 'paramaribo':'Paramaribo, SR', 'southpole':'South Pole'}
 
-AC_params = {"AR": 12, "e": 0.9, "m": 0.75, "S": 0.05, "CD_0": 0.03, "CL_max": 0.666 * 1.55,
-             "CL_alpha": 6.1859591823509295 * np.pi / 180}
+AC_params = {"AR": 12, "e": 0.9, "m": 0.75, "S": 0.05, "CD_0": None, "CD_0_base": 0.02771, "CD_0_h": 5.714285714285715e-07, "CL_max": 0.666 * 1.55,
+                 "CL_alpha": 6.1859591823509295 * np.pi / 180}
 
 atmos_dict = read_json('atmospheric_characteristics.json')
 res = {}
+x = [] #excess range
+y = [] #station
 
 for station in stations:
     directory = station + '/'
@@ -155,28 +158,59 @@ for station in stations:
     for filename in os.listdir(directory):
         f = os.path.join(directory, filename)
         if os.path.isfile(f):
+            #print(filename)
             with open(f) as file:
                 data = file.read()
-            if 'RS92' in data:
+            if 'RS92' in data and 'GPS longitude' in data:
+                #print('RS92')
                 wp, h_burst, dst_drift, isnotempty = read_RS92(data)
-                if (isnotempty):
+                if isnotempty and h_burst > spiral_height[station]:
                     FP = FlightPerformance(wp, AC_params, h_burst, spiral_height[station], 100)
                     FP.flight_sim()
                     flight_dict = FP.get_flightdict()
                     range_surplus = (flight_dict["distance_travelled"][-1] / 1000) - dst_drift
                     rng_lst.append(range_surplus)
-            elif 'iMet-1' in data:
-                wp, h_burst, dst_drift, isnotempty = read_iMet(data)
-                if isnotempty:
-                    FP = FlightPerformance(wp, AC_params, h_burst, 1000, 100)
+                    neg_count = len(list(filter(lambda x: (x < 0), rng_lst)))
+                    pos_count = len(list(filter(lambda x: (x >= 0), rng_lst)))
+                    print(filename, 'drift=', round(dst_drift,1), ' range=', round((flight_dict["distance_travelled"][-1] / 1000),1), 'delta=', round(range_surplus,1))
+                    print(station, ', pos:', pos_count, ', neg:', neg_count)
+                    x.append(range_surplus)
+                    y.append(station_name[station])
+            elif 'RS41-SGP' in data and 'GPS longitude' in data:
+                wp, h_burst, dst_drift, isnotempty = read_RS92(data)
+                if isnotempty and h_burst > spiral_height[station]:
+                    FP = FlightPerformance(wp, AC_params, h_burst, spiral_height[station], 100)
                     FP.flight_sim()
                     flight_dict = FP.get_flightdict()
-                    #print(h_burst, dst_drift)
                     range_surplus = (flight_dict["distance_travelled"][-1] / 1000) - dst_drift
                     rng_lst.append(range_surplus)
                     neg_count = len(list(filter(lambda x: (x < 0), rng_lst)))
                     pos_count = len(list(filter(lambda x: (x >= 0), rng_lst)))
-                    print(filename, 'drift=', dst_drift, ' range=', (flight_dict["distance_travelled"][-1] / 1000), 'delta=', range_surplus)
+                    print(filename, 'drift=', round(dst_drift,1), ' range=', round((flight_dict["distance_travelled"][-1] / 1000),1), 'delta=', round(range_surplus,1))
                     print(station, ', pos:', pos_count, ', neg:', neg_count)
+                    x.append(range_surplus)
+                    y.append(station_name[station])
+            elif 'iMet-1' in data:
+                #print('iMet-1')
+                wp, h_burst, dst_drift, isnotempty = read_iMet(data)
+                if isnotempty and h_burst > spiral_height[station]:
+                    FP = FlightPerformance(wp, AC_params, h_burst, spiral_height[station], 100)
+                    FP.flight_sim()
+                    flight_dict = FP.get_flightdict()
+                    #print(filename, h_burst, dst_drift)
+                    range_surplus = (flight_dict["distance_travelled"][-1] / 1000) - dst_drift
+                    rng_lst.append(range_surplus)
+                    neg_count = len(list(filter(lambda x: (x < 0), rng_lst)))
+                    pos_count = len(list(filter(lambda x: (x >= 0), rng_lst)))
+                    print(filename, 'drift=', round(dst_drift,1), ' range=', round((flight_dict["distance_travelled"][-1] / 1000),1), 'delta=', round(range_surplus,1))
+                    print(station, ', pos:', pos_count, ', neg:', neg_count)
+                    x.append(range_surplus)
+                    y.append(station_name[station])
 
     res[station] = rng_lst
+
+with open('results.json', 'w+') as f:
+    json.dump(res, f)
+
+plt.scatter(x, y)
+plt.show()
