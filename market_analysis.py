@@ -140,13 +140,13 @@ def read_iMet(file_txt):
     else:
         return 0,0,0,False
 
-stations = ['debilt', 'paramaribo', 'southpole', 'macquarie', 'boulder']
+stations = ['macquarie', 'debilt', 'paramaribo', 'southpole', 'boulder']
 spiral_height = {'boulder':3000, 'macquarie': 300, 'debilt':1500, 'paramaribo':1500, 'southpole':3500}
-station_name = {'boulder':'Boulder, US', 'macquarie': 'Macquarie, AU', 'debilt':'De Bilt, NL', 'paramaribo':'Paramaribo, SR', 'southpole':'South Pole'}
+station_name = {'boulder':'Boulder, US', 'macquarie': 'Macquarie, AU', 'debilt':'De Bilt, NL', 'paramaribo':'Paramaribo, SR', 'southpole':'South Pole, AQ'}
 
-AC_params = {"AR": 12, "e": 0.9, "m": 0.75, "S": 0.05, "CD_0": None, "CD_0_base": 0.02771, "CD_0_h": 5.714285714285715e-07, "CL_max": 0.666 * 1.55,
-                 "CL_alpha": 6.1859591823509295 * np.pi / 180}
-
+AC_params = {"AR": 12, "e": 0.9, "m": 0.75, "S": 0.05, "CD_0": None, "CD_0_base": 0.02771, "CD_0_h": 5.714285714285715e-07, "CL_max": 0.666 * 1.55, "CL_alpha": 6.1859591823509295 * np.pi / 180}
+#AC_params = {"AR": 12, "e": 0.9, "m": 2.621, "S": 0.215, "CD_0": None, "CD_0_base": 0.02561, "CD_0_h": 5.714285714285715e-07, "CL_max": 0.666 * 1.55, "CL_alpha": 6.1859591823509295 * np.pi / 180}
+#AC_params = {"AR": 12, "e": 0.9, "m": 4.021, "S": 0.215, "CD_0": None, "CD_0_base": 0.02561, "CD_0_h": 5.714285714285715e-07, "CL_max": 0.666 * 1.55, "CL_alpha": 6.1859591823509295 * np.pi / 180}
 atmos_dict = read_json('atmospheric_characteristics.json')
 res = {}
 x = [] #excess range
@@ -172,8 +172,8 @@ for station in stations:
                     rng_lst.append(range_surplus)
                     neg_count = len(list(filter(lambda x: (x < 0), rng_lst)))
                     pos_count = len(list(filter(lambda x: (x >= 0), rng_lst)))
-                    print(filename, 'drift=', round(dst_drift,1), ' range=', round((flight_dict["distance_travelled"][-1] / 1000),1), 'delta=', round(range_surplus,1))
-                    print(station, ', pos:', pos_count, ', neg:', neg_count)
+                    #print(filename, 'drift=', round(dst_drift,1), ' range=', round((flight_dict["distance_travelled"][-1] / 1000),1), 'delta=', round(range_surplus,1))
+                    #print(station, ', pos:', pos_count, ', neg:', neg_count)
                     x.append(range_surplus)
                     y.append(station_name[station])
             elif 'RS41-SGP' in data and 'GPS longitude' in data:
@@ -186,8 +186,8 @@ for station in stations:
                     rng_lst.append(range_surplus)
                     neg_count = len(list(filter(lambda x: (x < 0), rng_lst)))
                     pos_count = len(list(filter(lambda x: (x >= 0), rng_lst)))
-                    print(filename, 'drift=', round(dst_drift,1), ' range=', round((flight_dict["distance_travelled"][-1] / 1000),1), 'delta=', round(range_surplus,1))
-                    print(station, ', pos:', pos_count, ', neg:', neg_count)
+                    #print(filename, 'drift=', round(dst_drift,1), ' range=', round((flight_dict["distance_travelled"][-1] / 1000),1), 'delta=', round(range_surplus,1))
+                    #print(station, ', pos:', pos_count, ', neg:', neg_count)
                     x.append(range_surplus)
                     y.append(station_name[station])
             elif 'iMet-1' in data:
@@ -200,12 +200,13 @@ for station in stations:
                     #print(filename, h_burst, dst_drift)
                     range_surplus = (flight_dict["distance_travelled"][-1] / 1000) - dst_drift
                     rng_lst.append(range_surplus)
-                    neg_count = len(list(filter(lambda x: (x < 0), rng_lst)))
-                    pos_count = len(list(filter(lambda x: (x >= 0), rng_lst)))
-                    print(filename, 'drift=', round(dst_drift,1), ' range=', round((flight_dict["distance_travelled"][-1] / 1000),1), 'delta=', round(range_surplus,1))
-                    print(station, ', pos:', pos_count, ', neg:', neg_count)
                     x.append(range_surplus)
                     y.append(station_name[station])
+            
+            #print(filename, 'drift=', round(dst_drift,1), ' range=', round((flight_dict["distance_travelled"][-1] / 1000),1), 'delta=', round(range_surplus,1)        
+    neg_count = len(list(filter(lambda x: (x < 0), rng_lst)))
+    pos_count = len(list(filter(lambda x: (x >= 0), rng_lst)))
+    print(station, ', pos:', pos_count, ', neg:', neg_count)
 
     res[station] = rng_lst
 
