@@ -14,7 +14,8 @@ shift = 0 # CG shift
 incidence_h = -2*np.pi/180 # Tail incidence angle
 m = 4547.8 # mass
 mainwingloc = 0.154 # Main wing location
-xcg =  # CG location TODO: find what 0.30c for location is
+# xcg =  # CG location TODO: find what 0.30c for location is
+xcgbar = 0.3*2.022 # location of the centre of gravity divided by the MAC
 xac_xroottip = 0.030930075 # AC location relative to the main wing root tip
 b = 15.911
 c = 2.0569	# MAC
@@ -29,7 +30,7 @@ h = 0 # height - at max velocity, h=29000m at min velocity h=1000m
 atmos = ambiance.Atmosphere(h)
 rho = float(atmos.density) # density
 g0 = float(atmos.grav_accel) # gravitational acceleration
-V0 = 30 # velocity - Max velocity 150m/s Min velocity 34m/s
+V0 = 60 # velocity - Max velocity 150m/s Min velocity 34m/s
 V0c = V0/c
 theta = 0 # rad
 dampratio_phugoid_min = 0.04 # Minimum dampratio of the phugoid eigenmotion From: Sadraey
@@ -38,31 +39,31 @@ dampratio_spiral_min = 0.0 # Minimum dampratio of the spiral eigenmotion From: r
 dampratio_dutchroll_min = 0.19 # Minimum dampratio of the Dutch roll eigenmotion From: Sadraey
 dampratio_aperiodic_min = 0.0 # Minimum dampratio of the aperiodic roll eigenmotion From: requirements
 t_to_60deg_bank = 1.3 # Maximum time to achieve a 60 degree bank angle
-delta_a_max = 20*np.pi/180 # rad, maximum aileron deflection
-delta_e_max = 20*np.pi/180 # rad, maximum elevator deflection
+delta_a_max = -20*np.pi/180 # rad, maximum aileron deflection
+delta_e_max = -20*np.pi/180 # rad, maximum elevator deflection
 delta_r_max = 0*np.pi/180 # rad, maximum rudder deflection =0, no rudder
 
 # From Aerodynamics:
 ## Geometry
 AR = b/c     # Aspect ratio of the main wing
-S = 30    # Wing surface 
+S = 24.2    # Wing surface 
 ARh = 3     # Aspect ratio of the horizontal tail TODO: Very much taken from the A-10, can change
 xacbar = (xac_xroottip)/c  # location of the aerodynamic centre divided by the MAC
 lh = lhc*c  # Tail length
 
 # From Structures:
 deltaxcg = 0.1
-xcgbar = (xcg-mainwingloc)/c # location of the centre of gravity divided by the MAC
+# xcgbar = (xcg-mainwingloc)/c # location of the centre of gravity divided by the MAC
 xcg_fwBAR = xcgbar-0.5*deltaxcg  # most forward location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
 xcg_aftBAR = xcgbar+0.5*deltaxcg  # most aft location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
 # Ix =  # MMOI around x-axis TODO Get actual value
 # Iy =  # MMOI around y-axis TODO Get actual value
 # Iz =  # MMOI around z-axis TODO Get actual value
-KX2    = 0.019
-KZ2    = 0.042
+KX2    = 0.012
+KZ2    = 0.037
 KXZ    = 0.002
-KY2    = 1.25 * 1.114
-nmax = 2.5 # Maximum allowed load factor
+KY2    = 0.98
+nmax = 3.6 # Maximum allowed load factor
 
 ## Stability stuff for symmetric
 muc = m/(rho*S*c) #relative density [=m/(rho*S*c)]
@@ -109,12 +110,13 @@ Cnda = -0.0120 #derivative of Cn w.r.t. delta_a # Adverse yaw, is positive
 Cndr = -0.0939 #derivative of Cn w.r.t. delta_r # No rudder, =0
 
 ## Misc.
-CLAh  =    # lift coefficient of the aircraft without the tail
+
 CLa   = 5.74340   # derivative of the lift coefficient of the aircraft
-CLaAh =    # derivative of the lift coefficient of the aircraft without the tail w.r.t alpha 
-CLah  =     # derivative of the lift coefficient of the tail w.r.t. alpha 
-CLh   =     # lift coefficient of the tail
-Cmac  =     # moment coefficient of the aerodynamic centre 
+CLaAh = 1  # derivative of the lift coefficient of the aircraft without the tail w.r.t alpha 
+CLAh  =  1  # lift coefficient of the aircraft without the tail
+CLah  = 1    # derivative of the lift coefficient of the tail w.r.t. alpha 
+CLh   =  1   # lift coefficient of the tail
+Cmac  = 1   # moment coefficient of the aerodynamic centre 
 
 # ###### TEST DATA #####
 # Vh = 0.41339

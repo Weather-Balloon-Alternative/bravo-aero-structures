@@ -4,24 +4,24 @@ import ambiance
 import numpy as np
 
 # Main inputs:
-coeff = aeroloader.loadaero         ('Aero_output/v12g/v12steadywithtail.xlsx')
-coeff_notail = aeroloader.loadaero  ('Aero_output/v12g/v12steadynotail.xlsx')
-# steady = aeroloader.loadaero('Aero_output/v10/steady_analysis_v10-2.xlsx')
+coeff = aeroloader.loadaero         ('Aero_output/v13b/v13withtail.xlsx')
+coeff_notail = aeroloader.loadaero  ('Aero_output/v13b/v13notail.xlsx')
+
 Vh = 0.5    # Horizontal tail volume TODO: From Airplane Design (Sadraey)
-lhc = 4     # Ratio of the tail length over the chord TODO: From Airplane Design
-ShS = 0.10    # Ratio of the horizontal tail area over the main wing area
-shift = (-0.033873816880506724-0.028995398560739183-0.024816579620861368-0.021242461015908987-0.01818186826215651-0.01555642039680949-0.01331733179777228-0.011398012948470204-0.009758521811473297-0.008348901658708052-0.0071416850441190505)*0.064549722/4 # CG shift
+lhc = 5     # Ratio of the tail length over the chord TODO: From Airplane Design
+ShS = 0.15    # Ratio of the horizontal tail area over the main wing area
+b = 1.60623784 # Span
+c = 0.133853153  # MAC
+shift = 0*c/4 # AC shift
 incidence_h = -0*np.pi/180 # Tail incidence angle
-m = 0.743091757 # mass
-mainwingloc = 0.121 # Main wing location
-xcg = 0.161268648+shift # CG location
-xac = 0.16137931
-xac_xroottip = 0.030930075 # AC location relative to the main wing root tip
-b = 0.774596669 # Span
-c = 0.064549722 # MAC
+m = 4.02118645 # mass
+x_lemac = 0.274036712 # leading edge of MAC location
+xcg = 0.325288318+shift # CG location
+xac = 0.3075
+xac_xroottip = xac - x_lemac  # AC location relative to the main wing root tip
 deda = 1-0.725    # derivative of the downwash angle w.r.t. alpha TODO: Estimated from Sailplane Design (Thomas)
 VhV = 0.95     # ratio of the velocity at the tail over the aircraft velocity TODO: Guesstimate, just neglect for now
-
+ARh = 3     # Aspect ratio of the horizontal tail TODO: Very much taken from the A-10, can change
 
 # From requirements:
 SM = 0.05 # Stability margin
@@ -38,26 +38,25 @@ dampratio_spiral_min = 0.0 # Minimum dampratio of the spiral eigenmotion From: r
 dampratio_dutchroll_min = 0.19 # Minimum dampratio of the Dutch roll eigenmotion From: Sadraey
 dampratio_aperiodic_min = 0.0 # Minimum dampratio of the aperiodic roll eigenmotion From: requirements
 t_to_60deg_bank = 1.3 # Maximum time to achieve a 60 degree bank angle
-delta_a_max = -15*np.pi/180 # rad, maximum aileron deflection
-delta_e_max = -15*np.pi/180 # rad, maximum elevator deflection
-delta_r_max = 0*np.pi/180 # rad, maximum rudder deflection =0, no rudder
+delta_a_max = -20*np.pi/180 # rad, maximum aileron deflection
+delta_e_max = -20*np.pi/180 # rad, maximum elevator deflection
+
 
 # From Aerodynamics:
 ## Geometry
 AR = b/c     # Aspect ratio of the main wing
 S = b**2/AR    # Wing surface 
-ARh = 3     # Aspect ratio of the horizontal tail TODO: Very much taken from the A-10, can change
 xacbar = (xac_xroottip)/c  # location of the aerodynamic centre divided by the MAC
 lh = lhc*c  # Tail length
 
 # From Structures:
 deltaxcg = 0.1
-xcgbar = (xcg-mainwingloc)/c # location of the centre of gravity divided by the MAC
+xcgbar = (xcg-x_lemac)/c # location of the centre of gravity divided by the MAC
 xcg_fwBAR = xcgbar-0.5*deltaxcg  # most forward location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
 xcg_aftBAR = xcgbar+0.5*deltaxcg  # most aft location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
-Ix = 0.00599954 # MMOI around x-axis
-Iy = 0.01031032 # MMOI around y-axis
-Iz = 0.014749995 # MMOI around z-axis
+Ix = 0.168138033 # MMOI around x-axis
+Iy = 0.195197826 # MMOI around y-axis
+Iz = 0.358476584 # MMOI around z-axis
 nmax = 2.5 # Maximum allowed load factor
 
 ## Stability stuff for symmetric
@@ -78,7 +77,8 @@ Cma = coeff['CMm_Alpha'][-1] #derivative of Cm w.r.t. alpha
 Cmq = coeff['CMm_q'][-1] #derivative of Cm w.r.t. qc/V0
 CXde = 0 #derivative of CX w.r.t. delta_e # Commonly neglected, =0
 CNde = 0 #derivative of N w.r.t. delta_e, basically what force the elevator needs to generate
-CZde = -0.06200000000021344 #derivative of CZ w.r.t. delta_e
+CZde = 0 #derivative of CZ w.r.t. delta_e
+# CZde = 0
 Cmde = lhc*CZde #elevator efficiency, derivative of Cm w.r.t. delta_e
 
 ## Stability stuff for asymmetric
@@ -110,5 +110,4 @@ CLa = coeff['CL_Alpha'][-1] # derivative of the lift coefficient of the aircraft
 CLaAh = coeff_notail['CL_Alpha'][-1]   # derivative of the lift coefficient of the aircraft without the tail w.r.t alpha 
 CLah = 2 * np.pi * ARh / (ARh + 2)    # derivative of the lift coefficient of the tail w.r.t. alpha 
 CLh = (CL-CLAh)/(VhV**2*ShS) + CLah*incidence_h    # lift coefficient of the tail
-Cmac = coeff['CMy_Total'][-1] - CLAh*(xcgbar-xacbar) + (ShS*lhc*VhV**2)*CLh    # moment coefficient of the aerodynamic centre 
-
+Cmac = coeff['CMy_Total'][-1] - CLAh*(xcgbar-xacbar) + (ShS*lhc*VhV**2)*CLh    # moment coefficient of the aerodynamic centre

@@ -1,10 +1,19 @@
-from coefficients import *
 from initial_empennage import *
 from scissorplot import *
 from eigenvalues import *
 from controlsurfacerequirements import *
 
-def main_sizingcheck(radians=True,print_intermediate=True):
+def main_sizingcheck(radians=True,print_intermediate=True,Maneuver_SF=2):
+    """_summary_
+
+    Args:
+        radians (bool, optional): _description_. Defaults to True.
+        print_intermediate (bool, optional): _description_. Defaults to True.
+        Maneuver_SF (int, optional): _description_. Defaults to 2.
+
+    Returns:
+        _type_: _description_
+    """    
     # Size initial tail
     tailpar = tailsizing(b,c,ShS=ShS,Arh=ARh,lhc=lhc,Arv = 1.1)
     if print_intermediate:
@@ -20,7 +29,7 @@ def main_sizingcheck(radians=True,print_intermediate=True):
         print(f'Performing scissor plot analysis...\n')
     
     # Perform scissor plot analysis
-    scissorplt = scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xacbar,CLah,CLaAh,deda,SM,xcg_fwBAR,xcg_aftBAR,PLOT=False)
+    scissorplt = scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xacbar,CLah,CLaAh,deda,SM,xcg_fwBAR,xcg_aftBAR,PLOT=False,IgnoreErrors=True)
     ShS1 = scissorplt['ShS']
     if print_intermediate:
         if scissorplt['xcg_waste'] > 0:
@@ -91,12 +100,12 @@ def main_sizingcheck(radians=True,print_intermediate=True):
     pitchratereq = pitchraterequirements(V0,h,nmax)
     tmeasure = 1
     tpitch,xpitch = control.forced_response(ss_sym,T=np.linspace(0,tmeasure,1000),U=np.ones(1000)*delta_e_max)
-    pitchreqmet = xpitch[2][-1]/tmeasure > pitchratereq['ang_acc'][0]
+    pitchreqmet = xpitch[2][-1]/tmeasure > pitchratereq['ang_acc'][0]*Maneuver_SF
 
     # Bank
     bankmaneuver = np.vstack((np.ones(1000)*delta_a_max,np.zeros(1000)))
     tbank,xbank = control.forced_response(ss_asym,T=np.linspace(0,t_to_60deg_bank,1000),U=bankmaneuver)
-    bankreqmet = xbank[1][-1] > 60*np.pi/180
+    bankreqmet = xbank[1][-1] > 60*np.pi*Maneuver_SF/180
 
     if print_intermediate:
         print(f'Pitch and bank performance results:\n\
@@ -106,28 +115,44 @@ def main_sizingcheck(radians=True,print_intermediate=True):
     return pitchreqmet,bankreqmet
 
 if __name__ == '__main__':
-    main_sizingcheck()
+    # from coefficients_smallglider import *
+    from coefficients_bigglider import *
+    # from citpar import *
+    # main_sizingcheck()
 
-    # Obtain_ControlSurfaceSizing = True
-    # if Obtain_ControlSurfaceSizing:
-    #     resolution = 10E-3
-    #     CZde_opt = np.arange(-2,0,resolution)
-    #     CZde_best = np.nan
+    Obtain_ControlSurfaceSizing = True
+    # Obtain_ControlSurfaceSizing = False
+    if Obtain_ControlSurfaceSizing:
+        resolution = 10E-4
+        CZde_opt = np.arange(-1,0,resolution)
+        CZde_best = np.nan
 
-    #     Clda_opt = np.arange(-2,0,resolution)
-    #     Clda_best = np.nan
+        Clda_opt = np.arange(-1,0,resolution)
+        Clda_best = np.nan
 
-    #     for opt in range(len(CZde_opt)):
-    #         CZde = CZde_opt[opt]
-    #         Cmde = CZde*lhc #elevator efficiency, derivative of Cm w.r.t. delta_e
-    #         Clda = Clda_opt[opt]
-    #         pitchreqmet,bankreqmet = main_sizingcheck(print_intermediate=False)
-    #         if pitchreqmet:
-    #             CZde_best = CZde
+        for opt in range(len(CZde_opt)):
+            CZde = CZde_opt[opt]
+            Cmde = CZde*lhc #elevator efficiency, derivative of Cm w.r.t. delta_e
+            Clda = Clda_opt[opt]
+            pitchreqmet,bankreqmet = main_sizingcheck(print_intermediate=False)
+            if pitchreqmet:
+                CZde_best = CZde
 
-    #         if bankreqmet:
-    #             Clda_best = Clda
+            if bankreqmet:
+                Clda_best = Clda
 
-    #     print(f'Best CZde = {CZde_best}1/rad = {CZde_best*np.pi/180}1/deg')
-    #     print(f'Best Clda = {Clda_best}1/rad = {Clda_best*np.pi/180}1/deg')
+        print(f'Best CZde = {CZde_best} 1/rad = {CZde_best*np.pi/180} 1/deg')
+        print(f'Best Clda = {Clda_best} 1/rad = {Clda_best*np.pi/180} 1/deg')
 
+    # ss_sym = ss_symEOM(muc,c,V0,CZadot,Cmadot,KY2,CXu,CXa,CZ0,CXq,CZu,CZa,CX0,CZq,Cmu,Cma,Cmq,CXde,CZde,Cmde)
+    # tmeasure = 1
+    # tpitch,xpitch = control.forced_response(ss_sym,T=np.linspace(0,tmeasure,1000),U=np.ones(1000)*delta_e_max)
+    # plt.plot(tpitch,xpitch[2])
+    # plt.show()
+
+
+    # ss_asym = ss_asymmetricEOM(CYbdot,mub,b,V0,KX2,KXZ,KZ2,CYb,CL,CYp,CYr,Clb,Clp,Clr,Cnb,Cnp,Cnr,CYda,CYdr,Clda,Cldr,Cnda,Cndr)
+    # bankmaneuver = np.vstack((np.ones(1000)*delta_a_max,np.zeros(1000)))
+    # tbank,xbank = control.forced_response(ss_asym,T=np.linspace(0,t_to_60deg_bank,1000),U=bankmaneuver)
+    # plt.plot(tbank,xbank[1])
+    # plt.show()

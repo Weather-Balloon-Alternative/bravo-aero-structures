@@ -1,6 +1,6 @@
 import numpy as np
 import ambiance
-from coefficients import *
+# from coefficients import *
 
 def pitchraterequirements(V0,h,nmax,radians=True):
     """Generate the pitch rate requirements
@@ -25,5 +25,5 @@ def pitchraterequirements(V0,h,nmax,radians=True):
 
     return {'ang_acc': ang_acc}
 
-if __name__ == '__main__':
-    p = pitchraterequirements(V0,h,nmax,radians=False)
+# if __name__ == '__main__':
+    # p = pitchraterequirements(V0,h,nmax,radians=False)
