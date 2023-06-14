@@ -13,6 +13,8 @@ class FlightPerformance:
         self.m = AC_parameters["m"]
         self.S = AC_parameters["S"]
         self.CD_0 = AC_parameters["CD_0"]
+        self.CD_0_base = AC_parameters["CD_0_base"]
+        self.CD_0_h = AC_parameters["CD_0_h"]
         self.CL_max = AC_parameters["CL_max"]
         self.CL_alpha = AC_parameters["CL_alpha"]
         self.h_range = np.arange(h_max, h_spiral, -dh)
@@ -22,11 +24,11 @@ class FlightPerformance:
                             "V_T": [], "V_stall": [], "mach": [], "V_ground": [], "V_descent": [],
                             "D_t": [], "distance_travelled": [], "reynolds_number": []}
 
-        '''if len(self.wind_profile.keys()) < len(self.h_range):
-            print("Insufficient wind data")
+        if self.CD_0 == None:
+            self.CD_0 = {}
+            for h in self.h_range:
+                self.CD_0[str(h)] = self.CD_0_base + self.CD_0_h * h
 
-        if sorted(["AR", "e", "m", "S", "CD_0", "CL_max", "CL_alpha"]) != sorted(list(self.AC_parameters.keys())):
-            print("Aerodynamic parameter missing")'''
 
     def get_flightdict(self):
         return self.flight_dict
@@ -47,23 +49,30 @@ class FlightPerformance:
     def m_ac(self):
         return np.sqrt(self.AR * self.S) / self.AR
 
-    def C_D(self, C_L):
+    def C_D_constant(self, C_L, h):
         return self.CD_0 + C_L ** 2 / (np.pi * self.AR * self.e)
 
-    def Vgnd_over_sink(self, C_L, h):
+    def Vgnd_over_sink_constant(self, C_L, C_D, h):
         V_TAS = np.sqrt((2 * self.m * g) / (Atmosphere(h).density[0] * self.S * C_L))
-        return (V_TAS - self.wind_profile[str(h)]) / (V_TAS * (self.C_D(C_L) / C_L))
+        return (V_TAS - self.wind_profile[str(h)]) / (V_TAS * (C_D(C_L, h) / C_L))
+
+    def C_D_variable(self, C_L, h):
+        return self.CD_0[str(h)] + C_L ** 2 / (np.pi * self.AR * self.e)
+
+    def Vgnd_over_sink_variable(self, C_L, C_D, h):
+        V_TAS = np.sqrt((2 * self.m * g) / (Atmosphere(h).density[0] * self.S * C_L))
+        return (V_TAS - self.wind_profile[str(h)]) / (V_TAS * (C_D(C_L, h) / C_L))
 
     def reynolds(self, h, V_TAS):
         return (Atmosphere(h).density[0] * V_TAS * self.m_ac()) / Atmosphere(h).dynamic_viscosity[0]
 
-    def optimal_flight(self, h, plot=False):
+    def optimal_flight(self, Vgnd_over_sink, C_D, h, plot=False):
 
-        Vgnd_over_sink_h = self.Vgnd_over_sink(self.C_L_lst, h)
+        Vgnd_over_sink_h = Vgnd_over_sink(self.C_L_lst, C_D, h)
         Vgnd_over_sink_opt = np.max(Vgnd_over_sink_h)
         index = np.where(Vgnd_over_sink_h == Vgnd_over_sink_opt)
         C_L_opt = float(self.C_L_lst[index[0]])
-        L_over_D_opt = C_L_opt / self.C_D(C_L_opt)
+        L_over_D_opt = C_L_opt / C_D(C_L_opt, h)
         V_TAS_opt = np.sqrt((self.m * g) / self.S
                             * 2 / Atmosphere(h).density[0]
                             * 1 / C_L_opt)
@@ -75,13 +84,20 @@ class FlightPerformance:
 
     def flight_sim(self, plot=False):
 
+        if type(self.CD_0) == dict:
+            Vgnd_over_sink = self.Vgnd_over_sink_variable
+            C_D = self.C_D_variable
+        else:
+            Vgnd_over_sink = self.Vgnd_over_sink_constant
+            C_D = self.C_D_constant
+
         distance = 0
         V_TAS = 0
         trigger = False
 
         for i_h, h in enumerate(self.h_range):
 
-            C_L_opt, L_over_D_opt, V_TAS_opt, Vgnd_over_sink_opt = self.optimal_flight(h, plot)
+            C_L_opt, L_over_D_opt, V_TAS_opt, Vgnd_over_sink_opt = self.optimal_flight(Vgnd_over_sink, C_D, h, plot)
 
             if (V_TAS < V_TAS_opt) and (trigger is False):
 
