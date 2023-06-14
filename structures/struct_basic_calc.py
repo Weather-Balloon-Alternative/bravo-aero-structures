@@ -3,6 +3,7 @@ from airfoils import Airfoil
 import matplotlib.pyplot as plt
 import scipy.integrate
 import sections
+from math import sin, cos
 
 
 
