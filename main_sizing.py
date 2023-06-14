@@ -115,8 +115,8 @@ def main_sizingcheck(radians=True,print_intermediate=True,Maneuver_SF=2):
     return pitchreqmet,bankreqmet
 
 if __name__ == '__main__':
-    # from coefficients_smallglider import *
-    from coefficients_bigglider import *
+    from coefficients_smallglider import *
+    # from coefficients_bigglider import *
     # from citpar import *
     # main_sizingcheck()
 
@@ -150,9 +150,10 @@ if __name__ == '__main__':
     # plt.plot(tpitch,xpitch[2])
     # plt.show()
 
-
     # ss_asym = ss_asymmetricEOM(CYbdot,mub,b,V0,KX2,KXZ,KZ2,CYb,CL,CYp,CYr,Clb,Clp,Clr,Cnb,Cnp,Cnr,CYda,CYdr,Clda,Cldr,Cnda,Cndr)
     # bankmaneuver = np.vstack((np.ones(1000)*delta_a_max,np.zeros(1000)))
     # tbank,xbank = control.forced_response(ss_asym,T=np.linspace(0,t_to_60deg_bank,1000),U=bankmaneuver)
     # plt.plot(tbank,xbank[1])
+    # print(xbank[1][-1]*180/np.pi)
+    # print(xbank[1][-1] > 60*np.pi*2/180)
     # plt.show()

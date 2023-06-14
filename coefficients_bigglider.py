@@ -77,7 +77,7 @@ Cma = coeff['CMm_Alpha'][-1] #derivative of Cm w.r.t. alpha
 Cmq = coeff['CMm_q'][-1] #derivative of Cm w.r.t. qc/V0
 CXde = 0 #derivative of CX w.r.t. delta_e # Commonly neglected, =0
 CNde = 0 #derivative of N w.r.t. delta_e, basically what force the elevator needs to generate
-CZde = 0 #derivative of CZ w.r.t. delta_e
+CZde = -0.271 #derivative of CZ w.r.t. delta_e
 # CZde = 0
 Cmde = lhc*CZde #elevator efficiency, derivative of Cm w.r.t. delta_e
 
@@ -99,7 +99,7 @@ Cnp = coeff['CMn_p'][-1] #derivative of Cn w.r.t. p*b/(2*V0)
 Cnr = coeff['CMn_r'][-1] #derivative of Cn w.r.t. r*b/(2*V0)
 CYda = 0 #derivative of CY w.r.t. delta_a # =0
 CYdr = 0 #derivative of CY w.r.t. delta_r # No rudder, =0
-Clda = 0 #aileron efficiency, derivative of Cl w.r.t. delta_a #Should be negative
+Clda = -0.121 #aileron efficiency, derivative of Cl w.r.t. delta_a #Should be negative
 Cldr = 0 #derivative of Cl w.r.t. delta_r # No rudder, =0
 Cnda = 0 #derivative of Cn w.r.t. delta_a # Adverse yaw, is positive #Neglect for now
 Cndr = 0 #derivative of Cn w.r.t. delta_r # No rudder, =0

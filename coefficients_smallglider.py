@@ -54,7 +54,7 @@ deltaxcg = 0.1
 xcgbar = (xcg-x_lemac)/c # location of the centre of gravity divided by the MAC
 xcg_fwBAR = xcgbar-0.5*deltaxcg  # most forward location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
 xcg_aftBAR = xcgbar+0.5*deltaxcg  # most aft location of the centre of gravity divided by the MAC TODO: Guesstimate, get from Florian and Marten
-Ix = 0.009045461 # MMOI around x-axis
+Ix = 0.009045461*2 # MMOI around x-axis
 Iy = 0.011022181 # MMOI around y-axis
 Iz = 0.015930063 # MMOI around z-axis
 nmax = 2.5 # Maximum allowed load factor
@@ -77,7 +77,7 @@ Cma = coeff['CMm_Alpha'][-1] #derivative of Cm w.r.t. alpha
 Cmq = coeff['CMm_q'][-1] #derivative of Cm w.r.t. qc/V0
 CXde = 0 #derivative of CX w.r.t. delta_e # Commonly neglected, =0
 CNde = 0 #derivative of N w.r.t. delta_e, basically what force the elevator needs to generate
-CZde = -0.14399999999999924 #derivative of CZ w.r.t. delta_e
+CZde = -0.38399999999999945 #derivative of CZ w.r.t. delta_e
 # CZde = 0
 Cmde = lhc*CZde #elevator efficiency, derivative of Cm w.r.t. delta_e
 
@@ -99,7 +99,7 @@ Cnp = coeff['CMn_p'][-1] #derivative of Cn w.r.t. p*b/(2*V0)
 Cnr = coeff['CMn_r'][-1] #derivative of Cn w.r.t. r*b/(2*V0)
 CYda = 0 #derivative of CY w.r.t. delta_a # =0
 CYdr = 0 #derivative of CY w.r.t. delta_r # No rudder, =0
-Clda = -0.013999999999999124 #aileron efficiency, derivative of Cl w.r.t. delta_a #Should be negative
+Clda = -0.05699999999999916 #aileron efficiency, derivative of Cl w.r.t. delta_a #Should be negative
 Cldr = 0 #derivative of Cl w.r.t. delta_r # No rudder, =0
 Cnda = 0 #derivative of Cn w.r.t. delta_a # Adverse yaw, is positive #Neglect for now
 Cndr = 0 #derivative of Cn w.r.t. delta_r # No rudder, =0
