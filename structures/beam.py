@@ -94,7 +94,9 @@ def deflection(zz, w, V, M, E, I, plot=False):
 
 		#ax2.plot(zz, theta)
 		ax2.plot(zz, v)
-		ax2.set_ylim(ax2.get_xlim())
+		ax2.set_ylim(ax2.get_xlim()[1]*-0.25,ax2.get_xlim()[1]*0.5)
+		ax2.set_xlabel("Dist. along span [m]")
+		ax2.set_ylabel("Deflection [m]")
 		ax2.set_aspect(1)
 		ax2.grid()
 		plt.show()
@@ -148,17 +150,29 @@ def twist(zz, m, T, J, G, plot=False):
 
 	return T_tot, phi
 
-def plot_stress_curve(zz, v, stress_curve):
+def plot_stress_curve(zz, v, stress_curve, plot_stress=True, square=False):
 	norm = mpcolor.Normalize(vmin=0, vmax=np.max(stress_curve))
-	cmap = mpclm.inferno.reversed()
+	cmap = mpclm.inferno
 	m = mpclm.ScalarMappable(norm=norm, cmap=cmap)
-	
 	fig3, ax3 = plt.subplots()
+	fig3.colorbar(m, label="Stress [MPa]")
+	if plot_stress:
+		ax3.plot(zz, stress_curve/np.max(stress_curve)*0.02, color="C1")
 
-	ax3.plot(zz, stress_curve/np.max(stress_curve)*0.02, color="C1")
+
+
+
+	ax3.set_xlabel("Dist. along span [m]")
+	ax3.set_ylabel("Deflection [m]")
+	ax3.grid()
+	
 	for idx, sec in enumerate(zz[:-1]):
 		ax3.plot(zz[idx:(idx+2)], v[idx:(idx+2)], color = m.to_rgba(stress_curve[idx]))
 	#ax3.set_aspect(1)
+	if square:
+		ax3.set_aspect(1)
+		ax3.set_ylim(ax3.get_xlim()[1]*-0.25,ax3.get_xlim()[1]*0.5)
+
 	plt.show()
 
 
