@@ -1,5 +1,4 @@
 import numpy as np
-from airfoils import Airfoil
 import matplotlib.pyplot as plt
 import scipy.integrate
 import sections
@@ -134,8 +133,11 @@ def wing_deflection(planform, n, W, mat_prop_skin, skin_thickness):
 	YY = np.sin(YY)*planform["b"]/2
 
 	V_applied = np.zeros(YY.shape)
-	defl_res = beam.deflection(YY, lift_distr(YY), 0, 0, wing_skin.E, wing.get_sectional_properties_distr(YY)[0], plot=True)
-	twist_res = beam.twist(YY, lift_distr(YY)*0.001, 0, wing.get_sectional_properties_distr(YY)[2], 1e9, plot=False)
+	II_xx, II_yy, II_xy, JJ = wing.get_sectional_properties_distr(YY)
+	II_xx_eq = (II_xx*II_yy-II_xy**2)/II_yy
+
+	defl_res = beam.deflection(YY, lift_distr(YY), 0, 0, wing_skin.E, II_xx_eq, plot=True)
+	twist_res = beam.twist(YY, lift_distr(YY)*0.001, 0, JJ, 1e9, plot=False)
 
 	moments = np.array([defl_res[1], np.zeros(YY.shape)]).T
 
@@ -144,7 +146,7 @@ def wing_deflection(planform, n, W, mat_prop_skin, skin_thickness):
 
 	stress_curve = wing.get_max_stress_curve(YY, moments)
 	beam.plot_stress_curve(YY, defl, stress_curve/1e6, plot_stress=False, square=True)
-	return defl[-1], np.max(stress_curve)
+	return defl[-1], twist_res[-1][-1], np.max(stress_curve)
 
 def tail_defl_stress(dim, n, mat_prop_skin, skin_thickness):
 	a_ellipse = dim["c_h"]*0.5
@@ -193,11 +195,26 @@ if __name__=="__main__":
 
 	}
 
+	large_glider_dim = {"W"			: 3.5*9.81,
+						"S"			: 0.215,
+						"Sw"		: 0.215,
+						"AR"		: 12,
+						"tc"		: 0.08,
+						"taper_rat"	: 0.6,
+						"x_cg"		: 0.3253,
+						"ShS"		: 0.15,
+						"AR_h"		: 3,
+						"AR_v"		: 1.1,	
+						"lh_c"		: 5,
+						"v_tail_offset": 0.3,
+						"tc_tail"	: 0.1
+	}
 
 	nmax = 2.5
 
 	#planform_prop = planform(St, ARt, taper_ratt, tct, 0.85, S_h, b_h, b_v, c_h) #generate planform
-	glider_dim = derived_dimensions(small_glider_dim)
+	#glider_dim = derived_dimensions(small_glider_dim)
+	glider_dim = derived_dimensions(large_glider_dim)
 	print(glider_dim) 
 
 	#glider_dim = planf
@@ -208,7 +225,7 @@ if __name__=="__main__":
 	
 	min_thickness, stress_max, tau_max = wing_cs_sizing(glider_dim, (loads_landing, loads_flight), mat_dict['AFRP'], 1.5*1.5) # 1.5 for uts, 1.5 for approximations made
 	final_thickness = 0.40/1000
-	tip_deflection, stress_max_actual = wing_deflection(glider_dim, nmax, glider_dim["W"], mat_dict['AFRP'], final_thickness)
+	tip_deflection, tip_twist, stress_max_actual = wing_deflection(glider_dim, nmax, glider_dim["W"], mat_dict['AFRP'], final_thickness)
 
 
 	tail_defl_stress(glider_dim, nmax, mat_dict["AFRP"], 0.27/1000)
@@ -218,6 +235,7 @@ if __name__=="__main__":
 	print(f"min skin thickness req: {min_thickness*1000} mm")
 	print(f"max stress: {stress_max/1e6} Mpa, max shear: {tau_max/1e6}")
 	print(f"wing tip deflection under nmax: {tip_deflection*1000} mm")
+	print(f"wing tip twist under nmax: {tip_twist*57.3} deg")
 	print(f"max stress at chosen t{stress_max_actual/1e6} MPa")
 
 

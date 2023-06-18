@@ -1,5 +1,4 @@
 import numpy as np
-from airfoils import Airfoil
 import matplotlib.pyplot as plt
 import scipy.integrate
 import sections

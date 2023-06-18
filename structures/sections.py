@@ -32,7 +32,7 @@ class wing_structure():
 			II_xx[idx], II_yy, II_xy = cur_section.get_I()
 			JJ[idx] = cur_section.get_J()
 		self.II_xx, self.II_yy, self.II_xy, self.JJ = II_xx, II_yy, II_xy, JJ
-		return II_xx, II_yy, JJ
+		return II_xx, II_yy, II_xy, JJ
 
 	def get_max_stress_curve(self, YY, M):
 		stress_curve = np.zeros(YY.shape)
@@ -121,8 +121,9 @@ class thinwalled_airfoil():
 		#plt.show()
 		return self.I_xx, self.I_yy, self.I_xy
 	def get_J(self):
-		self.J = 1
-		return 1
+		self.get_area()
+		self.J = (4*self.wall_t*self.enclosed_area**2)/self.circumference
+		return self.J
 
 	def plot_stresses(self, moments):
 		#still needs to be implemented
