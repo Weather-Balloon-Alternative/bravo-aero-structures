@@ -49,6 +49,7 @@ def main_sizingcheck(radians=True,print_intermediate=True,Maneuver_SF=2):
     # Pre-check asymmetrical stability coefficients
     if print_intermediate:
         print(f'C_n_beta right sign?    {Cnb > 0}\n')
+        print(f'C_l_beta right sign?    {Clb < 0}\n')
         print(f'Calculating eigenvalues of asymmetric eigenmotions...\n')
 
     # Calculate eigenvalues of asymmetric eigenmotions
@@ -115,8 +116,8 @@ def main_sizingcheck(radians=True,print_intermediate=True,Maneuver_SF=2):
     return pitchreqmet,bankreqmet
 
 if __name__ == '__main__':
-    from coefficients_smallglider import *
-    # from coefficients_bigglider import *
+    # from coefficients_smallglider import *
+    from coefficients_bigglider import *
     # from citpar import *
     # main_sizingcheck()
 

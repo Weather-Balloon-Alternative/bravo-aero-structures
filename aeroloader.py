@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-def loadaero(filepath):
+def loadaero(filepath,discard=True):
     """
     ARGS:
             filepath: string,           name or route to a specific .xlsx or .xlsm file.
@@ -13,9 +13,10 @@ def loadaero(filepath):
     df = pd.read_excel(filepath)
     data = df.to_numpy()
 
-    #Discard all data until VSPAERO_Stab
-    iddiscard = np.where(data == 'VSPAERO_Stab')[0][0]
-    data = data[iddiscard::]
+    if discard:
+        #Discard all data until VSPAERO_Stab
+        iddiscard = np.where(data == 'VSPAERO_Stab')[0][0]
+        data = data[iddiscard::]
     
 
     

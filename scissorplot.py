@@ -150,9 +150,11 @@ def scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xacbar,CLah,CLaAh,deda,SM,xcg_fwBAR,xcg_a
 
 if __name__ == '__main__':
     from coefficients_bigglider import *
-    shift = 0.20280212956553434/4
-    xcg_aftBAR += shift
-    xcg_fwBAR += shift
+    # from coefficients_smallglider import *
+    # from coefficients_V7 import *
+    # shift = 0.20280212956553434/4
+    # xcg_aftBAR += shift
+    # xcg_fwBAR += shift
     print(scissorplot(CLh,CLAh,lh,c,VhV,Cmac,xacbar,CLah,CLaAh,deda,SM,xcg_fwBAR,xcg_aftBAR))
     # print(xcgbar-xacbar)
     # print(SM)
