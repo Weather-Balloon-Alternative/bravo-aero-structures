@@ -21,7 +21,7 @@ wind_dict = read_json('windprofiles_sonde_data.json')
 
 wind_profile = {}
 for h in wind_dict:
-    wind_profile[h] = windspeed(wind_dict, 0, h)
+    wind_profile[h] = windspeed(wind_dict, 2, h)
 
 
 
@@ -33,7 +33,7 @@ AC_params_z = [{"AR": 12, "e": 0.9, "m": 0.75, "S": 0.05, "CD_0": None, "CD_0_ba
                  "CL_alpha": 6.1859591823509295 * np.pi / 180}]
 
 for AC_params in AC_params_z:
-    FP = FlightPerformance(wind_profile, AC_params, 33_000, 1_500, 100)
+    FP = FlightPerformance(wind_profile, AC_params, 33_000, 1_500, 1000)
     FP.flight_sim()
     flight_dict = FP.get_flightdict()
     print(flight_dict["distance_travelled"][-1] / 1000)
@@ -48,6 +48,8 @@ def plotting(data, x_label, y_label):
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.show()
+
+plotting(np.array([flight_dict["V_descent"], flight_dict["h"]]), "Descent speed, V_descent [m/s]", "Altitude, h [m]")
 
 '''print(flight_dict["distance_travelled"][-1] / 1000)
 print(sum(flight_dict['D_t']) / 3600)'''
