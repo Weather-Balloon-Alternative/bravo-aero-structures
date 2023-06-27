@@ -140,10 +140,64 @@ def read_iMet(file_txt):
     else:
         return 0,0,0,False
 
+def read_lockheed(file_txt):
+    data = file_txt.split('\n')[81:]
+    data = [lst for lst in data if lst]
+    alt_lst = []
+    wsp_lst = []
+    first_gps = []
+    last_gps = []
+    for line in data:
+        x = line.strip().split()
+        #print(x)
+        if len(x) > 5:
+            alt, wsp, lon, lat = float(x[2])*1000, float(x[8]), float(x[11]), float(x[12])
+            #print(alt, wsp, lat, lon)
+            if alt < 60000 and wsp < 200 and alt >= 0:
+                alt_lst.append(alt)
+                wsp_lst.append(wsp)
+                if lat < 400 and lon < 400:
+                    if not first_gps:
+                        first_gps = [lat, lon]
+                    last_gps = [lat, lon]
+    if len(wsp_lst) > 0:
+        windprofile, max_alt = extrapolate(alt_lst, wsp_lst)
+        dst = gcd(first_gps, last_gps)
+        return windprofile, max_alt, dst, True
+    else:
+        return 0,0,0,False
+
+def read_lindenberg(file_txt):
+    data = file_txt.split('\n')[238:]
+    data = [lst for lst in data if lst]
+    alt_lst = []
+    wsp_lst = []
+    first_gps = []
+    last_gps = []
+    for line in data:
+        x = line.strip().split()
+        #print(x)
+        if len(x) > 5:
+            alt, wsp, lon, lat = float(x[2]), float(x[7]), float(x[9]), float(x[10])
+            #print(alt, wsp, lat, lon)
+            if alt < 60000 and wsp < 200 and alt >= 0:
+                alt_lst.append(alt)
+                wsp_lst.append(wsp)
+                if lat < 400 and lon < 400:
+                    if not first_gps:
+                        first_gps = [lat, lon]
+                    last_gps = [lat, lon]
+    if len(wsp_lst) > 0:
+        windprofile, max_alt = extrapolate(alt_lst, wsp_lst)
+        dst = gcd(first_gps, last_gps)
+        return windprofile, max_alt, dst, True
+    else:
+        return 0,0,0,False
+
 stations = ['macquarie', 'debilt', 'paramaribo', 'southpole', 'boulder', 'broadmedows']
-spiral_height = {'boulder':3000, 'macquarie': 300, 'debilt':1500, 'paramaribo':1500, 'southpole':3500, 'broadmedows':1500}
-station_name = {'boulder':'Boulder, US', 'macquarie': 'Macquarie, AU', 'debilt':'De Bilt, NL', 'paramaribo':'Paramaribo, SR', 'southpole':'South Pole, AQ', 'broadmedows':'Broadmeadows, AU'}
-stations = ['broadmedows']
+spiral_height = {'boulder':3000, 'macquarie': 300, 'debilt':1500, 'paramaribo':1500, 'southpole':3500, 'broadmedows':1500, 'wallops':1500, 'lindenberg':1500}
+station_name = {'boulder':'Boulder, US', 'macquarie': 'Macquarie, AU', 'debilt':'De Bilt, NL', 'paramaribo':'Paramaribo, SR', 'southpole':'South Pole, AQ', 'broadmedows':'Broadmeadows, AU', 'wallops':'Wallops Island, US', 'lindenberg':'Lindenberg, DE'}
+stations = ['wallops', 'lindenberg']
 #AC_params = {"AR": 12, "e": 0.9, "m": 0.75, "S": 0.05, "CD_0": None, "CD_0_base": 0.02771, "CD_0_h": 5.714285714285715e-07, "CL_max": 0.666 * 1.55, "CL_alpha": 6.1859591823509295 * np.pi / 180}
 #AC_params = {"AR": 12, "e": 0.9, "m": 2.621, "S": 0.215, "CD_0": None, "CD_0_base": 0.02561, "CD_0_h": 5.714285714285715e-07, "CL_max": 0.666 * 1.55, "CL_alpha": 6.1859591823509295 * np.pi / 180}
 AC_params = {"AR": 12, "e": 0.9, "m": 4.021, "S": 0.215, "CD_0": None, "CD_0_base": 0.02561, "CD_0_h": 5.714285714285715e-07, "CL_max": 0.666 * 1.55, "CL_alpha": 6.1859591823509295 * np.pi / 180}
@@ -166,6 +220,21 @@ for station in stations:
             if 'RS92' in data and 'GPS longitude' in data:
                 #print('RS92')
                 wp, h_burst, dst_drift, isnotempty = read_RS92(data)
+                burst_alts.append(h_burst)
+                if isnotempty and h_burst > spiral_height[station]:
+                    FP = FlightPerformance(wp, AC_params, h_burst, spiral_height[station], 100)
+                    FP.flight_sim()
+                    flight_dict = FP.get_flightdict()
+                    range_surplus = (flight_dict["distance_travelled"][-1] / 1000) - dst_drift
+                    rng_lst.append(range_surplus)
+                    neg_count = len(list(filter(lambda x: (x < 0), rng_lst)))
+                    pos_count = len(list(filter(lambda x: (x >= 0), rng_lst)))
+                    #print(filename, 'drift=', round(dst_drift,1), ' range=', round((flight_dict["distance_travelled"][-1] / 1000),1), 'delta=', round(range_surplus,1))
+                    #print(station, ', pos:', pos_count, ', neg:', neg_count)
+                    x.append(range_surplus)
+                    y.append(station_name[station])
+            elif 'Lindenberg' in data:
+                wp, h_burst, dst_drift, isnotempty = read_lindenberg(data)
                 burst_alts.append(h_burst)
                 if isnotempty and h_burst > spiral_height[station]:
                     FP = FlightPerformance(wp, AC_params, h_burst, spiral_height[station], 100)
@@ -206,14 +275,25 @@ for station in stations:
                     rng_lst.append(range_surplus)
                     x.append(range_surplus)
                     y.append(station_name[station])
-            
+            elif 'Lockheed Martin/Sippican' in data:
+                wp, h_burst, dst_drift, isnotempty = read_lockheed(data)
+                if isnotempty and h_burst > spiral_height[station]:
+                    FP = FlightPerformance(wp, AC_params, h_burst, spiral_height[station], 100)
+                    FP.flight_sim()
+                    flight_dict = FP.get_flightdict()
+                    #print(filename, h_burst, dst_drift)
+                    range_surplus = (flight_dict["distance_travelled"][-1] / 1000) - dst_drift
+                    rng_lst.append(range_surplus)
+                    x.append(range_surplus)
+                    y.append(station_name[station])
+
             #print(filename, 'drift=', round(dst_drift,1), ' range=', round((flight_dict["distance_travelled"][-1] / 1000),1), 'delta=', round(range_surplus,1)        
     neg_count = len(list(filter(lambda x: (x < 0), rng_lst)))
     pos_count = len(list(filter(lambda x: (x >= 0), rng_lst)))
     print(station, ', pos:', pos_count, ', neg:', neg_count)
 
     res[station] = rng_lst
-
+"""
 bas = np.array(burst_alts)
 pos = len(list(filter(lambda x: (x >= 33000), bas)))
 neg = len(list(filter(lambda x: (x < 33000), bas)))
@@ -225,8 +305,9 @@ for p in percentiles:
 plt.hist(bas, 100, density=True)
 plt.show()
 
-with open('results2.json', 'w+') as f:
+with open('results3.json', 'w+') as f:
     json.dump(res, f)
 
 plt.scatter(x, y)
 plt.show()
+"""
