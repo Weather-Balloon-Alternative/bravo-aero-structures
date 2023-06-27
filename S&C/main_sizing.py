@@ -119,10 +119,10 @@ if __name__ == '__main__':
     # from coefficients_smallglider import *
     from coefficients_bigglider import *
     # from citpar import *
-    # main_sizingcheck()
+    main_sizingcheck()
 
-    Obtain_ControlSurfaceSizing = True
-    # Obtain_ControlSurfaceSizing = False
+    # Obtain_ControlSurfaceSizing = True
+    Obtain_ControlSurfaceSizing = False
     if Obtain_ControlSurfaceSizing:
         resolution = 10E-4
         CZde_opt = np.arange(-1,0,resolution)

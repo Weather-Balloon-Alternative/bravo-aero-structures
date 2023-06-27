@@ -66,3 +66,17 @@ def eigenvalues_spiral(CL,Clb,Cnr,Cnb,Clr,Clp,CYb,mub,Cnp,V0,b):
 
 # ===================================
 # ===================================
+
+if __name__ == '__main__':
+    from coefficients_smallglider import *
+    # Cmq /= 2
+    KY2 =2
+    A = 2*muc*KY2*(2*muc-CZadot)
+    B = -2*muc*KY2*CZa-(2*muc+CZq)*Cmadot-(2*muc-CZadot)*Cmq
+    C = CZa*Cmq-(2*muc+CZq)*Cma
+    eigenvals = np.array(((-1*B+np.emath.sqrt(B**2-4*A*C))/(2*A),(-1*B-np.emath.sqrt(B**2-4*A*C))/(2*A)))
+    print(A,B,C)
+    print(B**2,4*A*C)
+    print(-2*muc*KY2*CZa,-(2*muc+CZq)*Cmadot,-(2*muc-CZadot)*Cmq)
+    print(2*muc-CZadot,Cmq)
+    print(eigenvals)

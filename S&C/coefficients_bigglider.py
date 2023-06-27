@@ -4,8 +4,8 @@ import ambiance
 import numpy as np
 
 # Main inputs:
-coeff = aeroloader.loadaero         ('Aero_output/v11/v11withtail.xlsx')
-coeff_notail = aeroloader.loadaero  ('Aero_output/v11/v11notail.xlsx')
+coeff = aeroloader.loadaero         ('Aero_output/v13b/v13withtail.xlsx')
+coeff_notail = aeroloader.loadaero  ('Aero_output/v13b/v13notail.xlsx')
 
 Vh = 0.5    # Horizontal tail volume TODO: From Airplane Design (Sadraey)
 lhc = 5     # Ratio of the tail length over the chord TODO: From Airplane Design
