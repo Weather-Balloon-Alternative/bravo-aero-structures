@@ -49,6 +49,22 @@ class FlightPerformance:
     def m_ac(self):
         return np.sqrt(self.AR * self.S) / self.AR
 
+    def gamma(self, C_L, C_D):
+        #print(180 / np.pi * np.arctan(C_L / C_D))
+        return np.arctan(C_D / C_L)
+
+    def Lift(self, m, gamma):
+        return (m * g) / (np.sin(gamma) * np.tan(gamma) + np.cos(gamma))
+
+    def V_TAS(self, Lift, S, rho, C_L):
+        return np.sqrt(Lift / S * 2 / rho * 1 / C_L)
+
+    def Vgnd_over_sink_variable_test(self, C_L, C_D, h):
+        gamma = self.gamma(C_L, C_D(C_L, h))
+        Lift = self.Lift(self.m, gamma)
+        V_TAS = self.V_TAS(Lift, self.S, Atmosphere(h).density[0], C_L)
+        return (V_TAS * np.cos(gamma) - self.wind_profile[str(h)]) / (V_TAS * np.sin(gamma))
+
     def C_D_constant(self, C_L, h):
         return self.CD_0 + C_L ** 2 / (np.pi * self.AR * self.e)
 
@@ -85,7 +101,7 @@ class FlightPerformance:
     def flight_sim(self, plot=False):
 
         if type(self.CD_0) == dict:
-            Vgnd_over_sink = self.Vgnd_over_sink_variable
+            Vgnd_over_sink = self.Vgnd_over_sink_variable_test
             C_D = self.C_D_variable
         else:
             Vgnd_over_sink = self.Vgnd_over_sink_constant
