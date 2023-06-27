@@ -140,17 +140,19 @@ def read_iMet(file_txt):
     else:
         return 0,0,0,False
 
-stations = ['macquarie', 'debilt', 'paramaribo', 'southpole', 'boulder']
-spiral_height = {'boulder':3000, 'macquarie': 300, 'debilt':1500, 'paramaribo':1500, 'southpole':3500}
-station_name = {'boulder':'Boulder, US', 'macquarie': 'Macquarie, AU', 'debilt':'De Bilt, NL', 'paramaribo':'Paramaribo, SR', 'southpole':'South Pole, AQ'}
-
-AC_params = {"AR": 12, "e": 0.9, "m": 0.75, "S": 0.05, "CD_0": None, "CD_0_base": 0.02771, "CD_0_h": 5.714285714285715e-07, "CL_max": 0.666 * 1.55, "CL_alpha": 6.1859591823509295 * np.pi / 180}
+stations = ['macquarie', 'debilt', 'paramaribo', 'southpole', 'boulder', 'broadmedows']
+spiral_height = {'boulder':3000, 'macquarie': 300, 'debilt':1500, 'paramaribo':1500, 'southpole':3500, 'broadmedows':1500}
+station_name = {'boulder':'Boulder, US', 'macquarie': 'Macquarie, AU', 'debilt':'De Bilt, NL', 'paramaribo':'Paramaribo, SR', 'southpole':'South Pole, AQ', 'broadmedows':'Broadmeadows, AU'}
+stations = ['broadmedows']
+#AC_params = {"AR": 12, "e": 0.9, "m": 0.75, "S": 0.05, "CD_0": None, "CD_0_base": 0.02771, "CD_0_h": 5.714285714285715e-07, "CL_max": 0.666 * 1.55, "CL_alpha": 6.1859591823509295 * np.pi / 180}
 #AC_params = {"AR": 12, "e": 0.9, "m": 2.621, "S": 0.215, "CD_0": None, "CD_0_base": 0.02561, "CD_0_h": 5.714285714285715e-07, "CL_max": 0.666 * 1.55, "CL_alpha": 6.1859591823509295 * np.pi / 180}
-#AC_params = {"AR": 12, "e": 0.9, "m": 4.021, "S": 0.215, "CD_0": None, "CD_0_base": 0.02561, "CD_0_h": 5.714285714285715e-07, "CL_max": 0.666 * 1.55, "CL_alpha": 6.1859591823509295 * np.pi / 180}
+AC_params = {"AR": 12, "e": 0.9, "m": 4.021, "S": 0.215, "CD_0": None, "CD_0_base": 0.02561, "CD_0_h": 5.714285714285715e-07, "CL_max": 0.666 * 1.55, "CL_alpha": 6.1859591823509295 * np.pi / 180}
 atmos_dict = read_json('atmospheric_characteristics.json')
 res = {}
 x = [] #excess range
 y = [] #station
+
+burst_alts = []
 
 for station in stations:
     directory = station + '/'
@@ -164,6 +166,7 @@ for station in stations:
             if 'RS92' in data and 'GPS longitude' in data:
                 #print('RS92')
                 wp, h_burst, dst_drift, isnotempty = read_RS92(data)
+                burst_alts.append(h_burst)
                 if isnotempty and h_burst > spiral_height[station]:
                     FP = FlightPerformance(wp, AC_params, h_burst, spiral_height[station], 100)
                     FP.flight_sim()
@@ -178,6 +181,7 @@ for station in stations:
                     y.append(station_name[station])
             elif 'RS41-SGP' in data and 'GPS longitude' in data:
                 wp, h_burst, dst_drift, isnotempty = read_RS92(data)
+                burst_alts.append(h_burst)
                 if isnotempty and h_burst > spiral_height[station]:
                     FP = FlightPerformance(wp, AC_params, h_burst, spiral_height[station], 100)
                     FP.flight_sim()
@@ -210,7 +214,18 @@ for station in stations:
 
     res[station] = rng_lst
 
-with open('results.json', 'w+') as f:
+bas = np.array(burst_alts)
+pos = len(list(filter(lambda x: (x >= 33000), bas)))
+neg = len(list(filter(lambda x: (x < 33000), bas)))
+print('above 33km:', pos, 'below:', neg)
+percentiles = [1,2,5,10,25,50,75,90,95,98,99]
+for p in percentiles:
+    print(f'{p} percentile:', np.percentile(bas, p))
+
+plt.hist(bas, 100, density=True)
+plt.show()
+
+with open('results2.json', 'w+') as f:
     json.dump(res, f)
 
 plt.scatter(x, y)
